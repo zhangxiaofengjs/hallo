@@ -1,0 +1,69 @@
+/* 颜色变量 */
+@contact-item-bg: #ffffff;
+@contact-item-hover: #f8f9fa;
+
+/* 联系人列表 */
+.contacts-list {
+  height: calc(100% - 110px);
+  overflow-y: auto;
+
+  .contact-item {
+    display: flex;
+    align-items: center;
+    padding: 10px 15px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin: 2px 0;
+    border-radius: 4px;
+    background-color: var(--contact-item-bg);
+    transition: all 0.2s;
+    cursor: pointer;
+
+    &:hover {
+      background-color: var(--contact-item-hover);
+    }
+
+    .contact-avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background-color: var(--primary-color);
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      margin-right: 10px;
+    }
+
+    .contact-info {
+      flex: 1;
+      min-width: 0;
+
+      .contact-name {
+        font-weight: 600;
+        color: var(--primary-text);
+        margin-bottom: 2px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .contact-last-message {
+        font-size: 12px;
+        color: var(--secondary-text);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+    }
+
+    .contact-time {
+      font-size: 11px;
+      color: var(--secondary-text);
+      margin-left: 10px;
+      align-self: flex-start;
+    }
+  }
+}
