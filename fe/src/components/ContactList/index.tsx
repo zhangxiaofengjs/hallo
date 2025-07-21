@@ -66,7 +66,7 @@ const ContactList: React.FC<ContactListProps> = ({
             </span>
           </div>
 
-          {!groupStates[groupName] && (
+          {groupStates[groupName] && (
             <div className="group-contacts">
               {groupContacts.map((contact) => (
                 <div

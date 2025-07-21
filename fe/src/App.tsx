@@ -1,11 +1,18 @@
 import { useState, useEffect } from "react";
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Navigate,
+  useNavigate,
+} from "react-router-dom";
 import "./App.less";
 import ContactList from "./components/ContactList/index";
-import ChatArea from "./components/ChatArea/index";
-import MessageInput from "./components/MessageInput/index";
 import ProfileSection from "./components/ProfileSection/index";
 import SearchBar from "./components/SearchBar/index";
 import ThemeToggle from "./components/ThemeToggle/index";
+import HomePage from "./pages/HomePage";
+import ChatPage from "./pages/ChatPage";
 
 // 模拟联系人数据
 const mockContacts = [
@@ -111,7 +118,9 @@ const mockMessagesByContact: MessagesByContact = {
   ],
 };
 
-function App() {
+// 创建一个内部组件，可以使用useNavigate钩子
+function AppContent() {
+  const navigate = useNavigate();
   const [selectedContact, setSelectedContact] = useState(1);
   const [messages, setMessages] = useState(mockMessagesByContact[1]);
   const [inputValues, setInputValues] = useState<{ [key: number]: string }>({});
@@ -179,7 +188,14 @@ function App() {
           minute: "2-digit",
         }),
       };
-      setMessages([...messages, newMessage]);
+
+      // 更新当前消息列表
+      const updatedMessages = [...messages, newMessage];
+      setMessages(updatedMessages);
+
+      // 同时更新mockMessagesByContact对象
+      mockMessagesByContact[selectedContact] = updatedMessages;
+
       // 清空当前联系人的输入
       setInputValues((prev) => ({
         ...prev,
@@ -189,7 +205,7 @@ function App() {
       // 模拟收到回复（2秒后）
       setTimeout(() => {
         const reply = {
-          id: messages.length + 2,
+          id: updatedMessages.length + 1,
           text: "这是一个自动回复消息，模拟对方的回复。",
           isSent: false,
           time: new Date().toLocaleTimeString([], {
@@ -197,7 +213,13 @@ function App() {
             minute: "2-digit",
           }),
         };
-        setMessages((prevMessages) => [...prevMessages, reply]);
+
+        // 更新当前消息列表
+        const messagesWithReply = [...updatedMessages, reply];
+        setMessages(messagesWithReply);
+
+        // 同时更新mockMessagesByContact对象
+        mockMessagesByContact[selectedContact] = messagesWithReply;
       }, 2000);
     }
   };
@@ -227,6 +249,13 @@ function App() {
     }));
   };
 
+  // 使用React Router的useNavigate钩子进行无刷新导航
+  const handleSelectContactWithRouting = (contactId: number) => {
+    handleSelectContact(contactId);
+    // 使用navigate进行无刷新导航
+    navigate(`/chat/${contactId}`);
+  };
+
   return (
     <div className={`chat-app ${isDarkMode ? "dark-theme" : "light-theme"}`}>
       {/* 左侧区域 */}
@@ -239,20 +268,37 @@ function App() {
         <ContactList
           contacts={filteredContacts}
           selectedContact={selectedContact}
-          onSelectContact={handleSelectContact}
+          onSelectContact={handleSelectContactWithRouting}
         />
       </div>
 
-      {/* 右侧区域 */}
-      <div className="right-panel">
-        <ChatArea messages={messages} />
-        <MessageInput
-          value={inputValues[selectedContact] || ""}
-          onChange={handleInputChange}
-          onSendMessage={handleSendMessage}
+      {/* 右侧区域 - 使用路由 */}
+      <Routes>
+        <Route path="/" element={<HomePage isDarkMode={isDarkMode} />} />
+        <Route
+          path="/chat/:contactId"
+          element={
+            <ChatPage
+              messages={messages}
+              inputValues={inputValues}
+              onInputChange={handleInputChange}
+              onSendMessage={handleSendMessage}
+              mockMessagesByContact={mockMessagesByContact}
+            />
+          }
         />
-      </div>
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
     </div>
+  );
+}
+
+// 主App组件，只负责提供Router上下文
+function App() {
+  return (
+    <Router>
+      <AppContent />
+    </Router>
   );
 }
 

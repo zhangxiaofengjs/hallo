@@ -39,15 +39,25 @@ const ChatArea: React.FC<ChatAreaProps> = ({ messages }) => {
                 remarkPlugins={[remarkGfm]}
                 components={{
                   // 自定义链接，在新标签页中打开
-                  a: ({ node, ...props }) => (
+                  a: ({ ...props }) => (
                     <a target="_blank" rel="noopener noreferrer" {...props} />
                   ),
                   // 使用SyntaxHighlighter提供代码高亮
-                  code: ({ node, inline, className, children, ...props }) => {
+                  code: ({
+                    inline,
+                    className,
+                    children,
+                    ...props
+                  }: {
+                    inline?: boolean;
+                    className?: string;
+                    children?: React.ReactNode;
+                    [key: string]: any;
+                  }) => {
                     const match = /language-(\w+)/.exec(className || "");
                     return !inline && match ? (
                       <SyntaxHighlighter
-                        style={vscDarkPlus as any}
+                        style={vscDarkPlus}
                         language={match[1]}
                         PreTag="div"
                       >
