@@ -5,9 +5,16 @@
   "version": "0.2.0",
   "configurations": [
     {
+      "type": "java",
+      "name": "启动后端SpringBoot",
+      "request": "launch",
+      "mainClass": "com.hallo.Application",
+      "projectName": "app"
+    },
+    {
       "type": "msedge",
       "request": "launch",
-      "name": "针对 localhost 启动 Edge",
+      "name": "启动前端Edge",
       "url": "http://localhost:5173/",
       "webRoot": "${workspaceFolder}/fe/"
     }
