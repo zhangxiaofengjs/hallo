@@ -13,21 +13,21 @@ import java.util.Optional;
 @RequestMapping("/api/contacts")
 @CrossOrigin(origins = "*")
 public class ContactController {
-    
+
     private final ContactService contactService;
-    
+
     @Autowired
     public ContactController(ContactService contactService) {
         this.contactService = contactService;
     }
-    
+
     // 获取所有联系人
     @GetMapping
     public ResponseEntity<List<Contact>> getAllContacts() {
         List<Contact> contacts = contactService.getAllContacts();
         return new ResponseEntity<>(contacts, HttpStatus.OK);
     }
-    
+
     // 根据ID获取联系人
     @GetMapping("/{id}")
     public ResponseEntity<Contact> getContactById(@PathVariable Long id) {
@@ -35,35 +35,35 @@ public class ContactController {
         return contact.map(value -> new ResponseEntity<>(value, HttpStatus.OK))
                 .orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
     }
-    
+
     // 根据组名获取联系人
     @GetMapping("/group/{groupName}")
     public ResponseEntity<List<Contact>> getContactsByGroup(@PathVariable String groupName) {
         List<Contact> contacts = contactService.getContactsByGroup(groupName);
         return new ResponseEntity<>(contacts, HttpStatus.OK);
     }
-    
+
     // 根据名称搜索联系人
     @GetMapping("/search")
     public ResponseEntity<List<Contact>> searchContactsByName(@RequestParam String name) {
         List<Contact> contacts = contactService.searchContactsByName(name);
         return new ResponseEntity<>(contacts, HttpStatus.OK);
     }
-    
+
     // 获取在线联系人
     @GetMapping("/online")
     public ResponseEntity<List<Contact>> getOnlineContacts() {
         List<Contact> contacts = contactService.getOnlineContacts();
         return new ResponseEntity<>(contacts, HttpStatus.OK);
     }
-    
+
     // 添加新联系人
     @PostMapping
     public ResponseEntity<Contact> addContact(@RequestBody Contact contact) {
         Contact newContact = contactService.addContact(contact);
         return new ResponseEntity<>(newContact, HttpStatus.CREATED);
     }
-    
+
     // 更新联系人信息
     @PutMapping("/{id}")
     public ResponseEntity<Contact> updateContact(@PathVariable Long id, @RequestBody Contact contact) {
@@ -76,7 +76,7 @@ public class ContactController {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
     }
-    
+
     // 删除联系人
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteContact(@PathVariable Long id) {
@@ -88,7 +88,7 @@ public class ContactController {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
     }
-    
+
     // 更新联系人的最后一条消息
     @PutMapping("/{id}/last-message")
     public ResponseEntity<Contact> updateLastMessage(

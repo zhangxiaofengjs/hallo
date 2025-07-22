@@ -58,71 +58,10 @@ const mockContacts = [
   },
 ];
 
-// 定义消息类型
-interface Message {
-  id: number;
-  text: string;
-  isSent: boolean;
-  time: string;
-}
-
-// 定义按联系人分组的消息类型
-interface MessagesByContact {
-  [key: number]: Message[];
-}
-
-// 模拟聊天消息数据，按联系人ID分组
-const mockMessagesByContact: MessagesByContact = {
-  1: [
-    {
-      id: 1,
-      text: "你好，有什么可以帮助你的吗？",
-      isSent: false,
-      time: "10:30",
-    },
-    { id: 2, text: "我想咨询一下产品的使用方法", isSent: true, time: "10:31" },
-    {
-      id: 3,
-      text: "好的，您可以查看我们的用户手册，或者直接告诉我您遇到的问题",
-      isSent: false,
-      time: "10:32",
-    },
-    {
-      id: 4,
-      text: "我在安装过程中遇到了一些问题",
-      isSent: true,
-      time: "10:33",
-    },
-    {
-      id: 5,
-      text: "能具体描述一下您遇到的问题吗？",
-      isSent: false,
-      time: "10:34",
-    },
-  ],
-  2: [
-    { id: 1, text: "明天会议几点开始？", isSent: false, time: "09:15" },
-    { id: 2, text: "上午10点，在会议室A", isSent: true, time: "09:16" },
-  ],
-  3: [
-    { id: 1, text: "项目进展如何？", isSent: false, time: "昨天" },
-    { id: 2, text: "已完成80%，预计周五完成", isSent: true, time: "昨天" },
-  ],
-  4: [
-    { id: 1, text: "资料我已经发给你了", isSent: false, time: "周一" },
-    { id: 2, text: "收到了，谢谢", isSent: true, time: "周一" },
-  ],
-  5: [
-    { id: 1, text: "好的，我知道了", isSent: false, time: "上周" },
-    { id: 2, text: "有什么问题随时联系", isSent: true, time: "上周" },
-  ],
-};
-
 // 创建一个内部组件，可以使用useNavigate钩子
 function AppContent() {
   const navigate = useNavigate();
   const [selectedContact, setSelectedContact] = useState(1);
-  const [messages, setMessages] = useState(mockMessagesByContact[1]);
   const [inputValues, setInputValues] = useState<{ [key: number]: string }>({});
   const [filteredContacts, setFilteredContacts] = useState(mockContacts);
   const [searchTerm, setSearchTerm] = useState("");
@@ -176,54 +115,6 @@ function AppContent() {
     }
   };
 
-  // 处理发送消息
-  const handleSendMessage = (message: string) => {
-    if (message.trim()) {
-      const newMessage = {
-        id: messages.length + 1,
-        text: message,
-        isSent: true,
-        time: new Date().toLocaleTimeString([], {
-          hour: "2-digit",
-          minute: "2-digit",
-        }),
-      };
-
-      // 更新当前消息列表
-      const updatedMessages = [...messages, newMessage];
-      setMessages(updatedMessages);
-
-      // 同时更新mockMessagesByContact对象
-      mockMessagesByContact[selectedContact] = updatedMessages;
-
-      // 清空当前联系人的输入
-      setInputValues((prev) => ({
-        ...prev,
-        [selectedContact]: "",
-      }));
-
-      // 模拟收到回复（2秒后）
-      setTimeout(() => {
-        const reply = {
-          id: updatedMessages.length + 1,
-          text: "这是一个自动回复消息，模拟对方的回复。",
-          isSent: false,
-          time: new Date().toLocaleTimeString([], {
-            hour: "2-digit",
-            minute: "2-digit",
-          }),
-        };
-
-        // 更新当前消息列表
-        const messagesWithReply = [...updatedMessages, reply];
-        setMessages(messagesWithReply);
-
-        // 同时更新mockMessagesByContact对象
-        mockMessagesByContact[selectedContact] = messagesWithReply;
-      }, 2000);
-    }
-  };
-
   // 切换联系人时更新消息和保存输入内容
   const handleSelectContact = (contactId: number) => {
     // 保存当前联系人的输入内容
@@ -233,12 +124,6 @@ function AppContent() {
     }));
 
     setSelectedContact(contactId);
-    // 安全访问消息数据，未定义的contactId返回空数组
-    const contactMessages =
-      contactId in mockMessagesByContact
-        ? mockMessagesByContact[contactId]
-        : [];
-    setMessages(contactMessages);
   };
 
   // 更新输入内容
@@ -271,7 +156,6 @@ function AppContent() {
           onSelectContact={handleSelectContactWithRouting}
         />
       </div>
-
       {/* 右侧区域 - 使用路由 */}
       <Routes>
         <Route path="/" element={<HomePage isDarkMode={isDarkMode} />} />
@@ -279,11 +163,8 @@ function AppContent() {
           path="/chat/:contactId"
           element={
             <ChatPage
-              messages={messages}
               inputValues={inputValues}
               onInputChange={handleInputChange}
-              onSendMessage={handleSendMessage}
-              mockMessagesByContact={mockMessagesByContact}
             />
           }
         />

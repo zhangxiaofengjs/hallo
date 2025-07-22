@@ -5,24 +5,28 @@ interface MessageInputProps {
   value: string;
   onChange: (value: string) => void;
   onSendMessage: (message: string) => void;
+  disabled?: boolean;
 }
 
 const MessageInput: React.FC<MessageInputProps> = ({
   value,
   onChange,
   onSendMessage,
+  disabled = false,
 }) => {
   const divRef = useRef<HTMLDivElement>(null);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (value.trim()) {
+    if (value.trim() && !disabled) {
       onSendMessage(value);
       onChange("");
     }
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
+    if (disabled) return;
+
     if (e.key === "Enter") {
       if (!e.shiftKey) {
         e.preventDefault();
@@ -82,13 +86,16 @@ const MessageInput: React.FC<MessageInputProps> = ({
     <form className="input-area" onSubmit={handleSubmit}>
       <div
         ref={divRef}
-        className="input-content"
-        contentEditable
+        className={`input-content ${disabled ? "disabled" : ""}`}
+        contentEditable={!disabled}
         onInput={handleInput}
         onKeyDown={handleKeyDown}
-        data-placeholder="输入消息..."
+        data-placeholder={disabled ? "连接中..." : "输入消息..."}
+        style={{ opacity: disabled ? 0.6 : 1 }}
       />
-      <button type="submit">发送</button>
+      <button type="submit" disabled={disabled}>
+        {disabled ? "连接中..." : "发送"}
+      </button>
     </form>
   );
 };

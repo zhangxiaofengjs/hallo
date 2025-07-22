@@ -17,6 +17,16 @@
       "name": "启动前端Edge",
       "url": "http://localhost:5173/",
       "webRoot": "${workspaceFolder}/fe/"
+    },
+    {
+      "type": "java",
+      "name": "Spring Boot-App<app>",
+      "request": "launch",
+      "cwd": "${workspaceFolder}",
+      "mainClass": "com.hallo.App",
+      "projectName": "app",
+      "args": "",
+      "envFile": "${workspaceFolder}/.env"
     }
   ]
 }

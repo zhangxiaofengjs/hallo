@@ -2,87 +2,78 @@ import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import ChatArea from "../components/ChatArea";
 import MessageInput from "../components/MessageInput";
+import { useWebSocket } from "../contexts/WebSocketContext";
 import "../App.less";
 
-interface Message {
-  id: number;
-  text: string;
-  isSent: boolean;
-  time: string;
-}
-
 interface ChatPageProps {
-  messages: Message[];
   inputValues: { [key: number]: string };
   onInputChange: (value: string) => void;
-  onSendMessage: (message: string) => void;
-  mockMessagesByContact: {
-    [key: number]: Message[];
-  };
 }
 
-const ChatPage: React.FC<ChatPageProps> = ({
-  messages,
-  inputValues,
-  onInputChange,
-  onSendMessage,
-  mockMessagesByContact,
-}) => {
+const ChatPage: React.FC<ChatPageProps> = ({ inputValues, onInputChange }) => {
   const { contactId } = useParams<{ contactId: string }>();
   const numericContactId = contactId ? parseInt(contactId) : 1;
-  const [currentMessages, setCurrentMessages] = useState<Message[]>([]);
+  const {
+    messages,
+    sendMessage,
+    connectToChat,
+    disconnectFromChat,
+    isConnected,
+    connectionError,
+  } = useWebSocket();
 
+  // 当联系人ID变化时，连接到相应的聊天
   useEffect(() => {
-    if (contactId && mockMessagesByContact) {
-      const id = parseInt(contactId);
-      // 安全访问消息数据，未定义的contactId返回空数组
-      const contactMessages =
-        id in mockMessagesByContact ? mockMessagesByContact[id] : [];
-      setCurrentMessages(contactMessages);
+    if (contactId) {
+      // 连接到特定聊天
+      connectToChat(`${contactId}`);
+
+      // 组件卸载时断开连接
+      return () => {
+        disconnectFromChat(`${contactId}`);
+      };
     }
-  }, [contactId, mockMessagesByContact]);
+  }, [contactId, connectToChat, disconnectFromChat]);
 
   // 处理发送消息
   const handleSendMessage = (message: string) => {
-    if (message.trim()) {
-      const newMessage = {
-        id: currentMessages.length + 1,
-        text: message,
-        isSent: true,
-        time: new Date().toLocaleTimeString([], {
-          hour: "2-digit",
-          minute: "2-digit",
-        }),
-      };
+    if (message.trim() && contactId) {
+      // 使用WebSocket发送消息
+      sendMessage(`${contactId}`, message);
 
-      setCurrentMessages([...currentMessages, newMessage]);
+      // 清空输入框
+      onInputChange("");
+    }
+  };
 
-      // 调用父组件的发送消息方法
-      onSendMessage(message);
-
-      // 模拟收到回复（2秒后）
-      setTimeout(() => {
-        const reply = {
-          id: currentMessages.length + 2,
-          text: "这是一个自动回复消息，模拟对方的回复。",
-          isSent: false,
-          time: new Date().toLocaleTimeString([], {
-            hour: "2-digit",
-            minute: "2-digit",
-          }),
-        };
-        setCurrentMessages((prevMessages) => [...prevMessages, reply]);
-      }, 2000);
+  // 处理重新连接
+  const handleReconnect = () => {
+    if (contactId) {
+      connectToChat(`${contactId}`);
     }
   };
 
   return (
     <div className="right-panel">
-      <ChatArea messages={currentMessages} />
+      {connectionError && (
+        <div className="connection-error">
+          <p>{connectionError}</p>
+          <button onClick={handleReconnect}>重新连接</button>
+        </div>
+      )}
+
+      {!isConnected && !connectionError && (
+        <div className="connection-status">
+          <p>正在连接聊天服务器...</p>
+        </div>
+      )}
+
+      <ChatArea messages={messages} />
       <MessageInput
         value={inputValues[numericContactId] || ""}
         onChange={onInputChange}
         onSendMessage={handleSendMessage}
+        disabled={!isConnected}
       />
     </div>
   );
