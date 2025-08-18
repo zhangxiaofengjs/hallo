@@ -5,32 +5,22 @@
       <!-- 用户信息 -->
       <UserInfo :user="currentUser" />
       <!-- 联系人列表 -->
-      <ContactList :contacts="contacts" />
+      <router-view name="contactList" />
     </div>
 
     <!-- 右侧聊天区域 -->
-    <div class="chat-side" v-if="selectedContact">
-      <ChatWindow :contact="selectedContact" :messages="contactMessages[selectedContact.id] || []"
-        :current-user="currentUser" @send-message="handleSendMessage" />
-    </div>
-    <div class="chat-side empty" v-else>
-      <p>请选择一个联系人开始聊天</p>
+    <div class="chat-side">
+      <router-view name="chat" />
+      <div class="chat-side empty" v-if="!$route.params.contactId">
+        <p>请选择一个联系人开始聊天</p>
+      </div>
     </div>
   </div>
 </template>
 
 <script lang="ts" setup>
-import { ref, watch, onMounted } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
+import { useRoute } from 'vue-router';
 import UserInfo from './UserInfo.vue';
-import ContactList from './ContactList.vue';
-import ChatWindow from './ChatWindow.vue';
-import type { Contact, Message } from '@/types/index';
-import contactService from '@/services/contactService';
-import messageService from '@/services/messageService';
-
-const route = useRoute();
-const router = useRouter();
 
 // 模拟当前用户数据
 const currentUser = {
@@ -40,82 +30,7 @@ const currentUser = {
   status: '在线'
 };
 
-// 联系人列表
-const contacts = ref<Contact[]>([]);
-
-// 获取联系人列表
-const fetchContacts = async () => {
-  try {
-    contacts.value = await contactService.getContacts();
-
-    // 如果有路由参数，选择对应联系人
-    selectContactByRoute();
-  } catch (error) {
-    console.error('获取联系人列表失败:', error);
-    // 可以在这里设置错误状态或显示错误消息
-  }
-};
-
-// 组件挂载时获取联系人列表
-onMounted(() => {
-  fetchContacts();
-});
-
-const selectedContact = ref<Contact | null>(null);
-
-// 存储每个联系人的消息
-const contactMessages = ref<Record<string, Message[]>>({});
-
-
-// 处理联系人选择
-const handleSelectContact = (contact: Contact) => {
-  selectedContact.value = contact;
-  // 重置未读消息数
-  contact.unreadCount = 0;
-  // 更新路由
-  router.push(`/chat/${contact.id}`);
-};
-
-// 根据路由参数选择联系人
-const selectContactByRoute = async () => {
-  const contactId = route.params.contactId;
-  if (contactId) {
-    const contact = contacts.value.find(c => c.id === contactId);
-    if (contact) {
-      selectedContact.value = contact;
-      // 重置未读消息数
-      contact.unreadCount = 0;
-
-      // 初始化每个联系人的消息
-      const messages: Message[] = await messageService.getMessagesByContactId(contact.id);
-      contactMessages.value[contact.id] = [...messages];
-    }
-  }
-};
-
-// 监听路由变化
-watch(() => route.params.contactId, () => {
-  selectContactByRoute();
-}, { immediate: true });
-
-// 处理发送消息
-const handleSendMessage = (content: string) => {
-  if (selectedContact.value) {
-    const newMessage: Message = {
-      id: Date.now().toString(),
-      content,
-      senderId: '',
-      time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-    };
-    // 将消息添加到对应联系人的消息列表中
-    if (!contactMessages.value[selectedContact.value.id]) {
-      contactMessages.value[selectedContact.value.id] = [];
-    }
-    contactMessages.value[selectedContact.value.id].push(newMessage);
-    selectedContact.value.lastMessage = content;
-    selectedContact.value.lastMessageTime = newMessage.time;
-  }
-};
+const route = useRoute();
 </script>
 
 <style lang="less" scoped>
