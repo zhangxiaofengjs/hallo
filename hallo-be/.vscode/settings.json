@@ -1,0 +1,14 @@
+{
+  "java.compile.nullAnalysis.mode": "disabled",
+  "editor.fontFamily": "'JetBrains Mono',Consolas, 'Courier New', monospace",
+  "explorer.fileNesting.enabled": true,
+  "editor.defaultFormatter": "redhat.java",
+  "editor.formatOnPaste": true,
+  "editor.codeActions.triggerOnFocusChange": true,
+  "editor.formatOnSave": true,
+  "editor.codeActionsOnSave": {
+    "source.organizeImports":"always"
+  },
+  "editor.columnSelection": false,
+  "java.configuration.updateBuildConfiguration": "interactive"
+}
