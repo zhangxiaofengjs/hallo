@@ -8,10 +8,9 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class ChatMessage {
-
     private MessageType type;
-    private Long senderId;
-    private Long receiverId;
+    private String fromId;
+    private String toId;
     private String content;
     private String timestamp;
 

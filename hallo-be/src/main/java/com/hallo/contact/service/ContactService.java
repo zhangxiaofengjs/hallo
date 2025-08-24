@@ -1,5 +1,6 @@
 package com.hallo.contact.service;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
@@ -23,7 +24,13 @@ public class ContactService {
         c1.setId("2");
         c1.setName("张三2");
         c1.setAvatar("/icons/2.png");
-        List<Contact> cs = List.of(c, c1);
+
+        List<Contact> cs = new ArrayList<>();
+        cs.add(c);
+        for (int i = 0; i < 10; i++) {
+            cs.add(c1);
+        }
+        cs.add(c1);
         return cs;
     }
 

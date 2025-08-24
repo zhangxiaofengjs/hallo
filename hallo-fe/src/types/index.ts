@@ -9,8 +9,9 @@ export interface User {
 // 消息类型
 export interface Message {
   id: string;
+  fromId: string; // 0 表示当前用户，其他表示联系人ID
+  toId: string; // 接收者ID，用于WebSocket消息
   content: string;
-  senderId: string; // 0 表示当前用户，其他表示联系人ID
   time: string;
 }
 

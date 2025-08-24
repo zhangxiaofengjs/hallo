@@ -21,14 +21,17 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
     @Override
     public void configureMessageBroker(MessageBrokerRegistry registry) {
-        // 配置消息代理
-        // 客户端发送消息的目的地前缀
-        registry.setApplicationDestinationPrefixes("/chat");
+        // 客户端→服务器：客户端消息以 /server/send-message 开头的地址将被转发到
+        // @MessageMapping("/send-message")
+        registry.setApplicationDestinationPrefixes("/server");
 
-        // 服务器向客户端推送消息的目的地前缀
+        // 服务器→客户端：
+        // 消息以 /topic 开头的地址将被转发到 @SendTo("/topic/{destination}")
+        // 消息以 /user 开头的地址将被转发到 @SendToUser("/user/{destination}")
         registry.enableSimpleBroker("/topic", "/user");
 
-        // 设置用户目的地前缀
+        // 服务器通过 @SendToUser("/private") 发送消息 → 实际目的地为 /user/{userId}/private ，其中
+        // {userId} 是动态替换的用户标识。
         registry.setUserDestinationPrefix("/user");
     }
 }

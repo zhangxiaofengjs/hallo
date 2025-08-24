@@ -1,15 +1,16 @@
 <template>
-  <ChatWindow v-if="selectedContact" :contact="selectedContact" :messages="contactMessages[selectedContact.id] || []"
+  <ChatPanel v-if="selectedContact" :contact="selectedContact" :messages="contactMessages[selectedContact.id] || []"
     :current-user="currentUser" @send-message="handleSendMessage" />
 </template>
 
 <script lang="ts" setup>
-import { ref, watch, onMounted } from 'vue';
+import { ref, watch, onMounted, onUnmounted } from 'vue';
 import { useRoute } from 'vue-router';
-import ChatWindow from '@/components/ChatWindow.vue';
+import ChatPanel from '@/components/ChatPanel.vue';
 import type { Contact, Message } from '@/types/index';
 import contactService from '@/services/contactService';
 import messageService from '@/services/messageService';
+import websocketService from '@/utils/websocketService';
 
 const route = useRoute();
 
@@ -20,6 +21,35 @@ const currentUser = {
   avatar: '/icons/3.png',
   status: '在线'
 };
+
+// 初始化WebSocket连接
+onMounted(() => {
+  websocketService.init(currentUser.id, (message: Message) => {
+
+    // 处理接收到的新消息
+    if (selectedContact.value) {
+      // 将新消息添加到对应联系人的消息列表中
+      if (!contactMessages.value[selectedContact.value.id]) {
+        contactMessages.value[selectedContact.value.id] = [];
+      }
+      contactMessages.value[selectedContact.value.id].push(message);
+
+      // 更新联系人的最后消息和时间
+      selectedContact.value.lastMessage = message.content;
+      selectedContact.value.lastMessageTime = message.time;
+
+      // 如果消息不是来自当前聊天的联系人，则增加未读计数
+      if (message.fromId !== selectedContact.value.id) {
+        selectedContact.value.unreadCount = (selectedContact.value.unreadCount || 0) + 1;
+      }
+    }
+  });
+});
+
+// 组件卸载时断开WebSocket连接
+onUnmounted(() => {
+  websocketService.disconnect();
+});
 
 const selectedContact = ref<Contact | null>(null);
 
@@ -55,11 +85,16 @@ const handleSendMessage = (content: string) => {
   if (selectedContact.value) {
     const newMessage: Message = {
       id: Date.now().toString(),
+      fromId: currentUser.id,
+      toId: selectedContact.value.id,
       content,
-      senderId: '',
       time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
     };
-    // 将消息添加到对应联系人的消息列表中
+
+    // 通过WebSocket发送消息
+    websocketService.sendMessage(newMessage);
+
+    // 将消息添加到本地消息列表以实现即时显示
     if (!contactMessages.value[selectedContact.value.id]) {
       contactMessages.value[selectedContact.value.id] = [];
     }

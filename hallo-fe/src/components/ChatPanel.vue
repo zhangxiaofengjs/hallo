@@ -1,5 +1,5 @@
 <template>
-  <div class="chat-window">
+  <div class="chat-panel">
     <!-- 聊天头部 -->
     <div class="chat-header">
       <div class="contact-info">
@@ -38,7 +38,7 @@
     <!-- 消息列表 -->
     <div class="message-list" ref="messageList" @scroll="saveScrollPosition">
       <div v-for="message in messages" :key="message.id"
-        :class="['message-item', message.senderId === '' ? 'sent' : 'received']">
+        :class="['message-item', message.fromId === '' ? 'sent' : 'received']">
         <div class="avatar-container">
           <img :src="contact.avatar" alt="{{ contact.name }}" class="avatar-small">
         </div>
@@ -201,7 +201,7 @@ const sendMessage = () => {
 <style lang="less" scoped>
 @import '@styles/variables.less';
 
-.chat-window {
+.chat-panel {
   display: flex;
   flex-direction: column;
   height: 100%;

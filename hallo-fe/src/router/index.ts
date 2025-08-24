@@ -12,7 +12,7 @@ const routes = [
         name: "ContactList",
         components: {
           contactList: () => import("@/views/ContactListView.vue"),
-          chat: () => import("@/views/ChatWindowView.vue"),
+          chat: () => import("@/views/ChatView.vue"),
         },
       },
       {
@@ -20,7 +20,7 @@ const routes = [
         name: "Chat",
         components: {
           contactList: () => import("@/views/ContactListView.vue"),
-          chat: () => import("@/views/ChatWindowView.vue"),
+          chat: () => import("@/views/ChatView.vue"),
         },
         props: true,
       },

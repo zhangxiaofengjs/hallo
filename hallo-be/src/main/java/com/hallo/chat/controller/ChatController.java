@@ -17,7 +17,7 @@ public class ChatController {
     }
 
     // 处理发送消息
-    @MessageMapping("/mmm")
+    @MessageMapping("/send-message")
     public void sendMessage(@Payload ChatMessage chatMessage) {
         // 保存消息到数据库
         // Message savedMessage = messageService.sendMessage(
@@ -32,7 +32,7 @@ public class ChatController {
         // chatMessage.setTimestamp(timestamp.format(formatter));
 
         // 发送消息给接收者
-        // messagingTemplate.convertAndSendToUser(
+        // messagingTemplate.convertAndSendTo1User(
         // chatMessage.getReceiverId().toString(),
         // "/user/",
         // chatMessage);
@@ -45,8 +45,21 @@ public class ChatController {
         // 发送广播消息
         // }
         messagingTemplate.convertAndSend(
-                "/topic",
+                "/user/" + chatMessage.getToId().toString() + "/message",
                 chatMessage);
+        // messagingTemplate.convertAndSend(
+        // "/topic",
+        // chatMessage);
+    }
+
+    /**
+     * 上线
+     * 
+     * @param chatMessage
+     */
+    @MessageMapping("/online")
+    public void online(@Payload ChatMessage chatMessage) {
+
     }
 
     // 处理用户正在输入的通知
@@ -56,7 +69,7 @@ public class ChatController {
 
         // 发送通知给接收者
         messagingTemplate.convertAndSendToUser(
-                chatMessage.getReceiverId().toString(),
+                chatMessage.getFromId().toString(),
                 "/queue/typing",
                 chatMessage);
     }
@@ -70,7 +83,7 @@ public class ChatController {
 
             // 发送已读通知给发送者
             messagingTemplate.convertAndSendToUser(
-                    chatMessage.getSenderId().toString(),
+                    chatMessage.getToId().toString(),
                     "/queue/read",
                     chatMessage);
         }
@@ -80,7 +93,7 @@ public class ChatController {
     @MessageMapping("/chat.join")
     public void join(@Payload ChatMessage chatMessage) {
         chatMessage.setType(ChatMessage.MessageType.JOIN);
-        chatMessage.setContent(chatMessage.getSenderId() + " 已上线");
+        chatMessage.setContent(chatMessage.getFromId() + " 已上线");
 
         // 广播用户加入通知
         messagingTemplate.convertAndSend("/topic/public", chatMessage);
@@ -90,7 +103,7 @@ public class ChatController {
     @MessageMapping("/chat.leave")
     public void leave(@Payload ChatMessage chatMessage) {
         chatMessage.setType(ChatMessage.MessageType.LEAVE);
-        chatMessage.setContent(chatMessage.getSenderId() + " 已离线");
+        chatMessage.setContent(chatMessage.getFromId() + " 已离线");
 
         // 广播用户离开通知
         messagingTemplate.convertAndSend("/topic/public", chatMessage);

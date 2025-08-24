@@ -25,13 +25,12 @@ class HttpService {
   private setupRequestInterceptor(): void {
     this.instance.interceptors.request.use(
       (config: InternalAxiosRequestConfig) => {
-        // 在发送请求之前做些什么
-        // 例如：添加认证token
-        // const token = localStorage.getItem('token');
-        // if (token) {
-        //   config.headers = config.headers || {};
-        //   config.headers.Authorization = `Bearer ${token}`;
-        // }
+        // 添加认证token
+        const token = localStorage.getItem("token");
+        if (token) {
+          config.headers = config.headers || {};
+          config.headers.Authorization = `Bearer ${token}`;
+        }
         return config;
       },
       (error: AxiosError) => {
@@ -109,4 +108,5 @@ class HttpService {
   }
 }
 
-export default new HttpService();
+const httpSevice = new HttpService();
+export default httpSevice;
