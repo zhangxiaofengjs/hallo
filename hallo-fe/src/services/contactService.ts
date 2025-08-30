@@ -1,13 +1,13 @@
 import httpService from "@/utils/httpService";
-import type { Contact } from "@/types";
+import type { ContactGroup } from "@/types";
 
 class ContactService {
   /**
    *  获取联系人列表
    */
-  getContacts = async (): Promise<Contact[]> => {
+  getContacts = async (): Promise<ContactGroup[]> => {
     try {
-      const contacts = await httpService.get<Contact[]>(`/contacts`);
+      const contacts = await httpService.get<ContactGroup[]>(`/contacts`);
       return contacts;
     } catch (error) {
       console.error("获取联系人列表失败:", error);

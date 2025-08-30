@@ -10,20 +10,19 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.hallo.contact.bean.Contact;
+import com.hallo.contact.bean.ContactGroup;
 import com.hallo.contact.service.ContactService;
 
 @RestController
-@RequestMapping("/api/contacts")
-// @CrossOrigin(origins = "*")
+@RequestMapping("/api")
 public class ContactController {
     @Autowired
     private ContactService contactService;
 
     // 获取所有联系人
-    @GetMapping
-    public ResponseEntity<List<Contact>> getContacts(@RequestParam(required = false) String userId) {
-        List<Contact> contacts = contactService.getContacts(userId);
-        return new ResponseEntity<>(contacts, HttpStatus.OK);
+    @GetMapping("contacts")
+    public ResponseEntity<List<ContactGroup>> getContacts(@RequestParam(required = false) Integer userId) {
+        List<ContactGroup> contactGroups = contactService.getContacts(userId);
+        return new ResponseEntity<>(contactGroups, HttpStatus.OK);
     }
 }

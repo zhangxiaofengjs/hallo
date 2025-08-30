@@ -2,13 +2,43 @@
   "java.compile.nullAnalysis.mode": "disabled",
   "editor.fontFamily": "'JetBrains Mono',Consolas, 'Courier New', monospace",
   "explorer.fileNesting.enabled": true,
-  "editor.defaultFormatter": "redhat.java",
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "[java]": {
+    "editor.defaultFormatter": "redhat.java"
+  },
+  "[xml]": {
+    "editor.formatOnSave": true,
+    "editor.defaultFormatter": "redhat.vscode-xml",
+    "editor.tabSize": 2
+  },
   "editor.formatOnPaste": true,
-  "editor.codeActions.triggerOnFocusChange": true,
   "editor.formatOnSave": true,
+  "editor.codeActions.triggerOnFocusChange": true,
   "editor.codeActionsOnSave": {
-    "source.organizeImports":"always"
+    "source.organizeImports": "always"
   },
   "editor.columnSelection": false,
-  "java.configuration.updateBuildConfiguration": "interactive"
+  "java.configuration.updateBuildConfiguration": "interactive",
+  "files.exclude": {
+    "**/target": true
+  },
+  "java.templates": {
+    "typeComment": [
+      "/**",
+      " * ",
+      " * @author ${git.email}",
+      " * @date ${currentDate:YYYY-MM-DD}",
+      " */"
+    ]
+  },
+  "xml.format.splitAttributes": "preserve",
+  "xml.format.splitAttributesIndentSize": 1,
+  "xml.format.legacy": true,
+  "xml.format.preserveAttributeLineBreaks": true,
+  "xml.format.enabled": true,
+  "xml.format.preservedNewlines": 1,
+  "xml.format.joinCommentLines": true,
+  "xml.format.preserveSpace": ["select", "update", "insert", "delete"],
+  "xml.format.preserveEmptyContent": true,
+  "xml.format.joinContentLines": false
 }

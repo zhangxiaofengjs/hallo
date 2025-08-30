@@ -1,11 +1,15 @@
 package com.hallo.contact.bean;
 
 import lombok.Data;
+import lombok.experimental.Accessors;
 
 @Data
+@Accessors(chain = true)
 public class Contact {
-    private String id;
-    private String name;
+    private Integer id;
+    private String account;
+    private String nickname;
+    private String mail;
     private String avatar;
-    private String groupName;
+    private ContactGroupType type;
 }
