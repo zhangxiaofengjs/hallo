@@ -1,11 +1,5 @@
 <template>
-  <h-chat-panel
-    v-if="selectedContact"
-    :contact="selectedContact"
-    :messages="contactMessages[selectedContact.uid] || []"
-    :current-user="currentUser"
-    @send-message="handleSendMessage"
-  />
+  <h-chat-panel v-if="currentUid" :uid="currentUid" @send-message="handleSendMessage" />
 </template>
 
 <script lang="ts" setup>
@@ -13,8 +7,8 @@
   import { useRoute } from 'vue-router'
   import HChatPanel from '@/components/ChatPanelComponent.vue'
   import websocketService from '@/utils/websocketService'
-  import type { Message } from '@/types'
-  import type { Contact } from '@/types/user'
+  import type { Message } from '@/types/message'
+  import type { User } from '@/types/user'
 
   const route = useRoute()
 
@@ -28,6 +22,7 @@
 
   // 初始化WebSocket连接
   onMounted(() => {
+    console.log('初始化WebSocket连接 onMounted')
     websocketService.init(currentUser.id, (message: Message) => {
       // 处理接收到的新消息
       if (selectedContact.value) {
@@ -42,7 +37,7 @@
         // selectedContact.value.lastMessageTime = message.time
 
         // 如果消息不是来自当前聊天的联系人，则增加未读计数
-        if (message.fromId !== selectedContact.value.uid) {
+        if (message.from !== selectedContact.value.uid) {
           // selectedContact.value.unreadCount = (selectedContact.value.unreadCount || 0) + 1
         }
       }
@@ -51,50 +46,62 @@
 
   // 组件卸载时断开WebSocket连接
   onUnmounted(() => {
+    console.log('初始化WebSocket连接 onUnmounted')
     websocketService.disconnect()
   })
 
-  // 监听路由变化
-  watch(
-    () => route.params.contactId,
-    () => {
-      handleContactSelectChanged()
-    },
-    { immediate: false }
-  )
-
-  const selectedContact = ref<Contact | null>(null)
+  const currentUid = ref<string>('')
+  const selectedContact = ref<User | null>(null)
 
   // 存储每个联系人的消息
   const contactMessages = ref<Record<string, Message[]>>({})
 
   // 根据路由参数选择联系人
   const handleContactSelectChanged = async () => {
-    const contactId = route.params.contactId
-    if (contactId) {
-      // 获取联系人信息
-      // const contacts = await contactService.getContacts()
-      // const contact = contacts.find((c) => c.id === contactId)
-      // if (contact) {
-      // selectedContact.value = contact
-      // 重置未读消息数
-      // contact.unreadCount = 0
-      // 初始化每个联系人的消息
-      // const messages: Message[] = await messageService.getMessagesByContactId(contact.id)
-      // contactMessages.value[contact.id] = [...messages]
-      // }
-    }
+    currentUid.value = route.params.uid as string
+    // if (selectedUid.value) {
+    //   // 模拟获取联系人信息
+    //   const mockContact: Contact = {
+    //     uid: uid,
+    //     account: `user${uid}`,
+    //     nickname: `联系人${uid}`,
+    //     mail: `user${uid}@example.com`,
+    //     avatar: '/icons/1.png',
+    //     type: UserType.FRIEND,
+    //     status: UserStatus.ONLINE,
+    //     unread: 0,
+    //   }
+    //   selectedContact.value = mockContact
+
+    //   // 初始化该联系人的消息列表（如果还没有的话）
+    //   if (!contactMessages.value[uid]) {
+    //     contactMessages.value[uid] = []
+    //   }
+    // } else {
+    //   selectedContact.value = null
+    // }
   }
+
+  /**
+   * 当路由参数变化时，重新选择联系人
+   */
+  watch(
+    () => route.params.uid,
+    () => {
+      handleContactSelectChanged()
+    },
+    { immediate: true }
+  )
 
   // 处理发送消息
   const handleSendMessage = (content: string) => {
     if (selectedContact.value) {
       const newMessage: Message = {
-        id: Date.now().toString(),
-        fromId: currentUser.id,
-        toId: selectedContact.value.uid,
+        id: 1,
+        from: currentUser.id,
+        to: selectedContact.value.uid,
         content,
-        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
       }
 
       // 通过WebSocket发送消息

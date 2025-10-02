@@ -7,7 +7,11 @@ package com.hallo.fw.context;
  */
 public class SecurityContext {
 
-    public static Integer getLoginUserId() {
-        return 1;// TODO
-    }
+  public static Integer getLoginUserId() {
+    return 1;// TODO
+  }
+
+  public static String getLoginUserUid() {
+    return "11111111";// TODO
+  }
 }

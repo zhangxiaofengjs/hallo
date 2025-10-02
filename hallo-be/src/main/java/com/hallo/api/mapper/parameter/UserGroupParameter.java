@@ -9,5 +9,6 @@ import lombok.Data;
  */
 @Data
 public class UserGroupParameter {
-    private Integer userId;
+  private Integer userId;
+  private String uid;
 }

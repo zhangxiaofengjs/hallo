@@ -1,16 +1,16 @@
 <template>
-  <v-list pt8 pb0>
-    <v-list-item
-      :prepend-avatar="user?.avatar"
-      :title="user?.name"
-      :subtitle="user?.status !== undefined ? '[' + i8nService.text(user?.status) + ']' : ''"
-      class="text-left"
-    >
-      <template v-slot:append>
-        <v-btn icon="mdi-menu-down" size="small" variant="text"></v-btn>
-      </template>
-    </v-list-item>
-  </v-list>
+  <v-card flat class="pa-2 d-flex align-center">
+    <v-avatar size="48" class="mr-3">
+      <v-img :src="user?.avatar" :alt="user?.nickname" />
+    </v-avatar>
+    <div class="flex-grow-1">
+      <div class="text-h6 text-left">{{ user?.nickname }}</div>
+      <div v-if="user?.status !== undefined" class="text-caption text-medium-emphasis text-left">
+        [{{ i8nService.text(user?.status) }}]
+      </div>
+    </div>
+    <v-btn icon="mdi-menu-down" size="small" variant="text"></v-btn>
+  </v-card>
 </template>
 
 <script lang="ts" name="UserInfoComponent" setup>

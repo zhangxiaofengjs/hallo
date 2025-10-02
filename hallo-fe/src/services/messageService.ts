@@ -1,5 +1,6 @@
-import type { Message } from "@/types";
-import httpService from "@/utils/httpService";
+import type { Message, MessageResponse } from '@/types/message'
+import errorService from '@/utils/errorService'
+import httpService from '@/utils/httpService'
 
 class MessageService {
   /**
@@ -7,17 +8,16 @@ class MessageService {
    * @param contactId 获取联系人的消息
    * @returns
    */
-  getMessagesByContactId = async (contactId: string): Promise<Message[]> => {
-    try {
-      const messages = await httpService.get<Message[]>(
-        `/messages/${contactId}`
-      );
-      return messages;
-    } catch (error) {
-      console.error("Failed to fetch messages:", error);
-      throw error;
+  getLoginUserMessages = async (uid: string): Promise<Message[]> => {
+    const response = await httpService.post<MessageResponse>(`/message/login-user-messages`, {
+      uid,
+    })
+    if (!response.success) {
+      return errorService.throw('获取用户消息失败', response.message)
     }
-  };
+
+    return response.data
+  }
 }
 
-export default new MessageService();
+export default new MessageService()

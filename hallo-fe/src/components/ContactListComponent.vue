@@ -1,7 +1,7 @@
 <template>
   <v-text-field
     v-model="searchKeyword"
-    class="pt-0 pl-2 pb-2"
+    class="pt-0 pl-2 pb-2 flex-grow-0 flex-shrink-0"
     label="查找联系人"
     placeholder="输入姓名、昵称或邮件"
     prepend-inner-icon="mdi-magnify"
@@ -13,7 +13,7 @@
     single-line
   ></v-text-field>
   <v-divider></v-divider>
-  <v-list :lines="false" density="comfortable" class="text-left">
+  <v-list :lines="false" density="comfortable" class="text-left flex-grow-1 overflow-auto">
     <template v-for="userGroup in filteredUserGroups" :key="userGroup.type">
       <v-list-subheader>
         {{ i8nService.text(userGroup.type) }}
@@ -66,7 +66,7 @@
 
 <script lang="ts" setup>
   import userService from '@/services/userService'
-  import type { Contact, UserGroup } from '@/types/user'
+  import type { User, UserGroup } from '@/types/user'
   import { UserStatus, UserType } from '@/types/user'
   import errorService from '@/utils/errorService'
   import i8nService from '@/utils/i8nService'
@@ -80,12 +80,15 @@
   const userGroups = ref<UserGroup[]>([])
 
   onMounted(async () => {
-    try {
-      // 查询当前用户信息
-      userGroups.value = await userService.getLoginUserGroups()
-    } catch (error: any) {
-      errorService.error(error)
-    }
+    // 查询当前用户信息
+    userService
+      .getLoginUserGroups()
+      .then((res) => {
+        userGroups.value = res
+      })
+      .catch((err) => {
+        errorService.error(err)
+      })
   })
 
   /**
@@ -112,14 +115,14 @@
 
   /**
    * 取得状态指示的小圆点颜色
-   * @param contact
+   * @param user
    */
-  const getStatusColor = (contact: Contact) => {
-    if (contact.type === UserType.GROUP) {
+  const getStatusColor = (user: User) => {
+    if (user.type === UserType.GROUP) {
       return '#00000000'
     }
 
-    switch (contact.status) {
+    switch (user.status) {
       case UserStatus.ONLINE:
         return 'success'
       case UserStatus.AWAY:
@@ -134,11 +137,13 @@
 
   /**
    * 选择联系人时的动作
-   * @param contact
+   * @param user
    */
-  const handleContactClick = (contact: Contact) => {
-    //跳转到聊天页面
-    router.push(`/chat/${contact.uid}`)
+  const handleContactClick = (user: User) => {
+    //跳转到聊天页面，通过state传递type参数
+    router.push({
+      path: `/chat/${user.uid}`,
+    })
   }
 </script>
 

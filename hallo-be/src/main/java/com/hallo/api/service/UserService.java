@@ -6,15 +6,17 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.hallo.api.mapper.GroupMapper;
 import com.hallo.api.mapper.UserFriendMapper;
 import com.hallo.api.mapper.UserGroupMapper;
 import com.hallo.api.mapper.UserMapper;
 import com.hallo.api.mapper.model.GroupModel;
 import com.hallo.api.mapper.model.UserModel;
+import com.hallo.api.mapper.parameter.GroupParameter;
 import com.hallo.api.mapper.parameter.UserFriendParameter;
 import com.hallo.api.mapper.parameter.UserGroupParameter;
 import com.hallo.api.mapper.parameter.UserParameter;
-import com.hallo.api.response.Contact;
+import com.hallo.api.request.UserRequest;
 import com.hallo.api.response.User;
 import com.hallo.api.response.UserGroup;
 import com.hallo.api.response.UserGroupType;
@@ -31,6 +33,9 @@ public class UserService {
 
   @Autowired
   private UserGroupMapper userGroupMapper;
+
+  @Autowired
+  private GroupMapper groupMapper;
 
   @Autowired
   private UserFriendMapper userFriendMapper;
@@ -63,16 +68,7 @@ public class UserService {
     userGroup.setContacts(_List.create());
     result.add(userGroup);
 
-    groups.stream().map(g -> {
-      return new Contact()//
-          .setUid(g.getUid())//
-          .setAccount(g.getUid())//
-          .setNickname(g.getName())//
-          .setAvatar(g.getAvatar())//
-          .setType(UserType.GROUP)
-          .setMail("")
-          .setStatus(UserStatus.ONLINE);
-    }).forEach(userGroup.getContacts()::add);
+    groups.stream().map(g -> convertGroup(g)).forEach(userGroup.getContacts()::add);
 
     // 取得联系人
     UserFriendParameter parameter = new UserFriendParameter();
@@ -84,18 +80,20 @@ public class UserService {
     friendUserGroup.setContacts(_List.create());
     result.add(friendUserGroup);
 
-    users.stream().map(c -> {
-      return new Contact()
-          .setUid(c.getUid())
-          .setAccount(c.getAccount())
-          .setNickname(c.getNickname())
-          .setAvatar(c.getAvatar())
-          .setType(UserType.USER)
-          .setMail(c.getMail())
-          .setStatus(c.getStatus());
-    }).forEach(friendUserGroup.getContacts()::add);
+    users.stream().map(c -> convertUser(c)).forEach(friendUserGroup.getContacts()::add);
 
     return result;
+  }
+
+  private User convertGroup(GroupModel g) {
+    return new User()//
+        .setUid(g.getUid())//
+        .setAccount(g.getUid())//
+        .setNickname(g.getName())//
+        .setAvatar(g.getAvatar())//
+        .setType(UserType.GROUP)
+        .setMail("")
+        .setStatus(UserStatus.ONLINE);
   }
 
   /**
@@ -112,13 +110,47 @@ public class UserService {
       BizException.throwException("指定用户不存在:{}", parameter.getId());
     }
 
-    UserModel userModel = userList.get(0);
+    UserModel user = userList.get(0);
 
-    return new User()//
-        .setUid(userModel.getUid())//
-        .setName(userModel.getNickname())//
-        .setAvatar(userModel.getAvatar())//
-        .setMail(userModel.getMail())
-        .setStatus(userModel.getStatus());
+    return convertUser(user);
+  }
+
+  /**
+   * 取得用户或组信息
+   * 
+   * @param userId
+   * @param request
+   * @return
+   */
+  public User getUser(UserRequest request) {
+    UserParameter parameter = new UserParameter();
+    parameter.setUid(request.getUid());
+    List<UserModel> userList = userMapper.getUserList(parameter);
+    if (userList.size() != 0) {
+      UserModel user = userList.get(0);
+
+      return convertUser(user);
+    }
+
+    GroupParameter groupParameter = new GroupParameter();
+    groupParameter.setUid(request.getUid());
+    List<GroupModel> groupList = groupMapper.getGroupList(groupParameter);
+    if (groupList.size() != 0) {
+      GroupModel group = groupList.get(0);
+      return convertGroup(group);
+    }
+
+    return BizException.throwException("指定用户不存在:{}", parameter.getId());
+  }
+
+  private User convertUser(UserModel user) {
+    return new User()
+        .setUid(user.getUid())
+        .setAccount(user.getAccount())
+        .setNickname(user.getNickname())
+        .setAvatar(user.getAvatar())
+        .setType(UserType.USER)
+        .setMail(user.getMail())
+        .setStatus(user.getStatus());
   }
 }

@@ -1,0 +1,14 @@
+package com.hallo.api.mapper.parameter;
+
+import lombok.Data;
+
+/**
+ * 
+ * @author zhangxiaofeng
+ * @create 2025年9月28日 18:54:17
+ */
+@Data
+public class MessageParameter {
+  private Integer from;
+  private Integer to;
+}

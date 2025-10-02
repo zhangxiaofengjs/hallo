@@ -12,5 +12,5 @@ import lombok.Data;
 @Data
 public class UserGroup {
     private UserGroupType type;
-    private List<Contact> contacts;
+    private List<User> contacts;
 }

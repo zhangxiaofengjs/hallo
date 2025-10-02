@@ -15,9 +15,13 @@ export enum UserStatus {
 // 用户类型
 export interface User {
   uid: string
-  name: string
+  account: string
+  nickname: string
+  mail: string
   avatar: string
+  type: UserType
   status: UserStatus
+  unread: number
 }
 
 // 联系人列表组类型
@@ -35,17 +39,5 @@ export enum UserType {
 // 联系人列表组
 export interface UserGroup {
   type: UserGroupType
-  contacts: Contact[]
-}
-
-// 联系人类型
-export interface Contact {
-  uid: string
-  account: string
-  nickname: string
-  mail: string
-  avatar: string
-  type: UserType
-  status: UserStatus
-  unread: number
+  contacts: User[]
 }

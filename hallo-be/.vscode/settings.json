@@ -43,7 +43,15 @@
   "xml.format.enabled": true,
   "xml.format.preservedNewlines": 1,
   "xml.format.joinCommentLines": true,
-  "xml.format.preserveSpace": ["select", "update", "insert", "delete"],
+  "xml.format.preserveSpace": [
+    "select",
+    "update",
+    "insert",
+    "delete",
+    "where",
+    "if",
+    "set"
+  ],
   "xml.format.preserveEmptyContent": true,
   "xml.format.joinContentLines": false
 }
