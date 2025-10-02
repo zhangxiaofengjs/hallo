@@ -1,29 +1,63 @@
 <template>
+  <v-text-field
+    v-model="searchKeyword"
+    class="pt-0 pl-2 pb-2"
+    label="查找联系人"
+    placeholder="输入姓名、昵称或邮件"
+    prepend-inner-icon="mdi-magnify"
+    color="primary"
+    variant="plain"
+    hide-details
+    clearable
+    density="compact"
+    single-line
+  ></v-text-field>
+  <v-divider></v-divider>
   <v-list :lines="false" density="comfortable" class="text-left">
-    <template v-for="contactGroup in filteredContactGroups" :key="contactGroup.type">
+    <template v-for="userGroup in filteredUserGroups" :key="userGroup.type">
       <v-list-subheader>
-        {{ contactGroup.type == ContactGroupType.FRIEND ? '联系人' : '群组' }}
+        {{ i8nService.text(userGroup.type) }}
       </v-list-subheader>
       <v-list-item
-        v-for="contact in contactGroup.contacts"
-        :key="contact.id"
+        v-for="contact in userGroup.contacts"
+        :key="contact.uid"
         @click="handleContactClick(contact)"
         :value="contact"
         color="primary"
-        :prepend-avatar="contact.avatar"
       >
         <template v-slot:prepend>
-          <v-badge bordered location="top right" color="error" content="999">
-            <v-avatar color="grey-lighten-1" :image="contact.avatar"></v-avatar>
-          </v-badge>
+          <div class="d-flex align-center">
+            <!-- 状态指示器 -->
+            <v-badge
+              dot
+              :color="getStatusColor(contact)"
+              location="bottom right"
+              offset-x="6"
+              offset-y="0"
+            >
+              <v-avatar
+                color="grey-lighten-1"
+                :text="contact.nickname.substring(0, 1)"
+                :image="contact.avatar"
+                class="mr-2"
+              ></v-avatar>
+            </v-badge>
+          </div>
         </template>
-        <v-list-item-title v-text="contact.nickname"></v-list-item-title>
+        <v-list-item-title v-text="contact.nickname" class="text-truncate"></v-list-item-title>
         <v-list-item-subtitle
           v-text="contact.nickname + ' ' + contact.nickname"
           class="text-truncate d-block"
         ></v-list-item-subtitle>
         <template v-slot:append>
-          <v-btn color="grey-lighten-1" icon="mdi-information" variant="text"></v-btn>
+          <v-badge
+            v-if="contact.unread"
+            bordered
+            location="top right"
+            color="error"
+            class="mr-2"
+            :content="contact.unread"
+          ></v-badge>
         </template>
       </v-list-item>
     </template>
@@ -31,27 +65,41 @@
 </template>
 
 <script lang="ts" setup>
-  import { computed } from 'vue'
+  import userService from '@/services/userService'
+  import type { Contact, UserGroup } from '@/types/user'
+  import { UserStatus, UserType } from '@/types/user'
+  import errorService from '@/utils/errorService'
+  import i8nService from '@/utils/i8nService'
+  import { computed, onMounted, ref } from 'vue'
   import { useRouter } from 'vue-router'
-  import type { Contact, ContactGroup } from '@/types'
-  import { ContactGroupType } from '@/types'
 
   const router = useRouter()
 
-  const props = defineProps<{
-    contactGroups: ContactGroup[]
-    filterText?: string
-  }>()
+  const searchKeyword = ref('')
 
-  // 过滤联系人
-  const filteredContactGroups = computed(() => {
-    if (!props.filterText) {
-      return props.contactGroups
+  const userGroups = ref<UserGroup[]>([])
+
+  onMounted(async () => {
+    try {
+      // 查询当前用户信息
+      userGroups.value = await userService.getLoginUserGroups()
+    } catch (error: any) {
+      errorService.error(error)
+    }
+  })
+
+  /**
+   *  过滤联系人和群组
+   * @returns
+   */
+  const filteredUserGroups = computed(() => {
+    if (!searchKeyword.value) {
+      return userGroups.value
     }
 
     //返回过滤好的联系人和群组
-    const filter = props.filterText.toLowerCase()
-    return props.contactGroups.map((group) => ({
+    const filter = searchKeyword.value.toLowerCase()
+    return userGroups.value.map((group) => ({
       ...group,
       contacts: group.contacts.filter(
         (contact) =>
@@ -62,9 +110,35 @@
     }))
   })
 
-  // 选择联系人
+  /**
+   * 取得状态指示的小圆点颜色
+   * @param contact
+   */
+  const getStatusColor = (contact: Contact) => {
+    if (contact.type === UserType.GROUP) {
+      return '#00000000'
+    }
+
+    switch (contact.status) {
+      case UserStatus.ONLINE:
+        return 'success'
+      case UserStatus.AWAY:
+        return 'warning'
+      case UserStatus.BUSY:
+        return 'error'
+      case UserStatus.OFFLINE:
+      default:
+        return '#a1a1a1'
+    }
+  }
+
+  /**
+   * 选择联系人时的动作
+   * @param contact
+   */
   const handleContactClick = (contact: Contact) => {
-    router.push(`/chat/${contact.id}`)
+    //跳转到聊天页面
+    router.push(`/chat/${contact.uid}`)
   }
 </script>
 

@@ -3,13 +3,20 @@
   "editor.fontFamily": "'JetBrains Mono',Consolas, 'Courier New', monospace",
   "explorer.fileNesting.enabled": true,
   "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "editor.indentSize": 2,
+  "editor.detectIndentation": false,
+  "editor.tabSize": 2,
+  "editor.insertSpaces": true,
   "[java]": {
     "editor.defaultFormatter": "redhat.java"
   },
   "[xml]": {
     "editor.formatOnSave": true,
     "editor.defaultFormatter": "redhat.vscode-xml",
-    "editor.tabSize": 2
+    "editor.tabSize": 2,
+    "editor.indentSize": 2,
+    "editor.insertSpaces": true,
+    "editor.detectIndentation": false
   },
   "editor.formatOnPaste": true,
   "editor.formatOnSave": true,
@@ -22,18 +29,16 @@
   "files.exclude": {
     "**/target": true
   },
-  "java.templates": {
-    "typeComment": [
-      "/**",
-      " * ",
-      " * @author ${git.email}",
-      " * @date ${currentDate:YYYY-MM-DD}",
-      " */"
-    ]
-  },
+  "java.templates.typeComment": [
+    "/**",
+    " * ",
+    " * @author zhangxiaofeng",
+    " * @create ${date} ${time}",
+    " */"
+  ],
   "xml.format.splitAttributes": "preserve",
-  "xml.format.splitAttributesIndentSize": 1,
-  "xml.format.legacy": true,
+  "xml.format.splitAttributesIndentSize": 2,
+  "xml.format.legacy": false,
   "xml.format.preserveAttributeLineBreaks": true,
   "xml.format.enabled": true,
   "xml.format.preservedNewlines": 1,

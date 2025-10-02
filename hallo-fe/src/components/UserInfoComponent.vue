@@ -1,9 +1,9 @@
 <template>
-  <v-list>
+  <v-list pt8 pb0>
     <v-list-item
-      :prepend-avatar="user.avatar"
-      :subtitle="user.status"
-      :title="user.name"
+      :prepend-avatar="user?.avatar"
+      :title="user?.name"
+      :subtitle="user?.status !== undefined ? '[' + i8nService.text(user?.status) + ']' : ''"
       class="text-left"
     >
       <template v-slot:append>
@@ -13,18 +13,24 @@
   </v-list>
 </template>
 
-<script lang="ts" name="UserXInfo" setup>
-  // 假设 User 类型定义在项目内，尝试根据常见目录结构调整路径
-  import type { User } from '@/types/index'
+<script lang="ts" name="UserInfoComponent" setup>
+  import userService from '@/services/userService'
+  import type { User } from '@/types/user'
+  import { onMounted, ref } from 'vue'
+  import errorService from '@/utils/errorService'
+  import i8nService from '@/utils/i8nService'
 
-  defineOptions({
-    name: 'HUserInfo', // 标签名变为 <custom-name>
+  // 当前登录用户数据
+  const user = ref<User | null>(null)
+
+  onMounted(async () => {
+    try {
+      // 查询当前用户信息
+      user.value = await userService.getLoginUser()
+    } catch (error: any) {
+      errorService.error(error)
+    }
   })
-
-  // 模拟当前登录用户数据
-  const props = defineProps<{
-    user: User
-  }>()
 </script>
 
 <style lang="less" scoped>

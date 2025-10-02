@@ -15,14 +15,11 @@ spring:
     # 设置时区为上海
     time-zone: Asia/Shanghai
 
-# Mybatis 配置
-mybatis:
-  mapper-locations: classpath:mapper/**/*.xml
-
 # 日志配置
 logging:
   level:
     # Spring 框架日志级别
-    "[org.springframework]": DEBUG
+    "[org.springframework]": ERROR
+    "[org.mybatis]": ERROR
     # 应用日志级别
     "[com.hallo]": DEBUG

@@ -17,7 +17,7 @@
   </v-card>
 </template>
 
-<script lang="ts" setup>
+<script lang="ts" setup name="LoginComponent">
   import { ref } from 'vue'
 
   const form = ref({

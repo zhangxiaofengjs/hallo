@@ -167,7 +167,8 @@
 
 <script lang="ts" setup>
   import { ref, watch, onMounted, computed, nextTick } from 'vue'
-  import type { Contact, Message } from '@/types'
+  import type { Message } from '@/types'
+  import type { Contact } from '@/types/user'
 
   const props = defineProps<{
     contact: Contact
@@ -194,9 +195,9 @@
 
   // 获取当前联系人的输入框内容
   const currentMessageInput = computed({
-    get: () => messageInputs.value[props.contact.id] || '',
+    get: () => messageInputs.value[props.contact.uid] || '',
     set: (value) => {
-      messageInputs.value[props.contact.id] = value
+      messageInputs.value[props.contact.uid] = value
     },
   })
 
@@ -219,14 +220,14 @@
   // 保存滚动位置
   const saveScrollPosition = () => {
     if (messageList.value) {
-      contactScrollPositions.value[props.contact.id] = messageList.value.scrollTop
+      contactScrollPositions.value[props.contact.uid] = messageList.value.scrollTop
     }
   }
 
   // 恢复滚动位置
   const restoreScrollPosition = () => {
     if (messageList.value) {
-      const savedPosition = contactScrollPositions.value[props.contact.id]
+      const savedPosition = contactScrollPositions.value[props.contact.uid]
       if (savedPosition !== undefined) {
         messageList.value.scrollTop = savedPosition
       } else {
@@ -248,7 +249,7 @@
 
   // 监听联系人变化，保存当前滚动位置并恢复新联系人的滚动位置
   watch(
-    () => props.contact.id,
+    () => props.contact.uid,
     (_, oldId) => {
       if (messageList.value) {
         // 保存旧联系人的滚动位置

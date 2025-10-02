@@ -18,18 +18,17 @@ const routes = [
         path: '',
         name: 'hp',
         components: {
-          contactListView: () => import('@/views/ContactListView.vue'),
-          chatView: () => import('@/views/ChatView.vue'),
+          contactList: () => import('@/views/ContactListView.vue'),
+          chat: () => import('@/views/ChatView.vue'),
         },
       },
-
       {
         // 聊天路由：根据联系人 ID 显示聊天内容
-        path: 'chat/:contactId',
+        path: 'chat/:uid',
         name: 'chat',
         components: {
-          contactListView: () => import('@/views/ContactListView.vue'),
-          chatView: () => import('@/views/ChatView.vue'),
+          contactList: () => import('@/views/ContactListView.vue'),
+          chat: () => import('@/views/ChatView.vue'),
         },
         props: {
           chat: true, // 将路由参数传递给 ChatView.vue

@@ -4,6 +4,7 @@ import axios, {
   type AxiosResponse,
   AxiosError,
 } from 'axios'
+import errorService from './errorService'
 
 class HttpService {
   private instance: AxiosInstance
@@ -84,15 +85,26 @@ class HttpService {
 
   // GET请求
   public get<T = any>(url: string, config?: InternalAxiosRequestConfig): Promise<T> {
-    // 默认加上当前用户
-    let userId = localStorage.getItem('userId')
-    userId = '1'
-    if (url.indexOf('?') === -1) {
-      url = `${url}?userId=${userId}`
-    } else {
-      url = `${url}&userId=${userId}`
+    try {
+      // 默认加上当前用户
+      let userId = localStorage.getItem('userId')
+      userId = '1'
+      if (url.indexOf('?') === -1) {
+        url = `${url}?userId=${userId}`
+      } else {
+        url = `${url}&userId=${userId}`
+      }
+      return this.instance
+        .get<T>(url, config)
+        .then((response) => response.data)
+        .catch((error) => {
+          // 系统错误
+          return errorService.sysError(error)
+        })
+    } catch (error: any) {
+      // 系统错误
+      return errorService.sysError(error)
     }
-    return this.instance.get<T>(url, config).then((response) => response.data)
   }
 
   // POST请求

@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.hallo.api.mapper.UserGroupMapper">
+  <resultMap id="groupResultMap" type="com.hallo.api.mapper.model.GroupModel">
+    <id column="group_id" property="id" />
+    <result column="group_uid" property="uid" />
+    <result column="group_name" property="name" />
+    <result column="group_avatar" property="avatar" />
+    <result column="group_description" property="description" />
+  </resultMap>
+
+  <select id="getGroupList" resultMap="groupResultMap">
+    SELECT 
+      g.c_id AS group_id,
+      g.c_uid AS group_uid,
+      g.c_name AS group_name,
+      g.c_avatar AS group_avatar,
+      g.c_description AS group_description
+    FROM 
+      t_user_group ug
+    INNER JOIN t_group g ON ug.c_group_id = g.c_id
+    WHERE 
+      ug.c_user_id = #{userId}
+    ORDER BY 
+      g.c_name ASC
+  </select>
+</mapper>
