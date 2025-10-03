@@ -24,7 +24,7 @@ const routes = [
       },
       {
         // 聊天路由：根据联系人 ID 显示聊天内容
-        path: 'chat/:uid',
+        path: 'chat/:type/:uid',
         name: 'chat',
         components: {
           contactList: () => import('@/views/ContactListView.vue'),

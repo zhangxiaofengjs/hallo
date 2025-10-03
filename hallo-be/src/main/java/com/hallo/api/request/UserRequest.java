@@ -1,5 +1,7 @@
 package com.hallo.api.request;
 
+import com.hallo.api.response.UserType;
+
 import lombok.Data;
 
 /**
@@ -10,4 +12,5 @@ import lombok.Data;
 @Data
 public class UserRequest {
   private String uid;
+  private UserType type;
 }

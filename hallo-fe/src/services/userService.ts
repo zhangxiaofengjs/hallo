@@ -1,6 +1,6 @@
 import httpService from '@/utils/httpService'
 import type { User, UserGroup, UserGroupResponse, UserResponse, UserType } from '@/types/user'
-import errorService from '@/utils/errorService'
+import errorService from '@/utils/logService'
 
 class UserService {
   /**
@@ -32,9 +32,10 @@ class UserService {
    * @param uid
    * @returns
    */
-  getUser = async (uid: string): Promise<User> => {
+  getUser = async (uid: string, type: string): Promise<User> => {
     const response = await httpService.post<UserResponse>(`/user/user`, {
       uid,
+      type,
     })
     if (!response.success) {
       return errorService.throw('获取用户信息失败', response.message)

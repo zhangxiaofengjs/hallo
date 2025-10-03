@@ -1,5 +1,6 @@
 package com.hallo.api.service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -18,6 +19,8 @@ import com.hallo.api.mapper.parameter.MessageParameter;
 import com.hallo.api.mapper.parameter.UserParameter;
 import com.hallo.api.request.UserRequest;
 import com.hallo.api.response.Message;
+import com.hallo.api.response.User;
+import com.hallo.api.response.UserType;
 import com.hallo.fw.context.SecurityContext;
 import com.hallo.fw.exception.BizException;
 
@@ -42,11 +45,15 @@ public class MessageService {
    * @return
    */
   public List<Message> getLoginUserMessages(UserRequest request) {
-    UserParameter userParameter = new UserParameter();
-    userParameter.setUid(request.getUid());
-    List<UserModel> userList = userMapper.getUserList(userParameter);
+    if (request.getType() == UserType.USER) {
+      UserParameter userParameter = new UserParameter();
+      userParameter.setUid(request.getUid());
+      List<UserModel> userList = userMapper.getUserList(userParameter);
 
-    if (!userList.isEmpty()) {
+      if (userList.isEmpty()) {
+        return BizException.throwException("指定用户不存在:{}", request.getUid());
+      }
+
       UserModel toUser = userList.get(0);
       MessageParameter parameter = new MessageParameter();
       parameter.setFrom(SecurityContext.getLoginUserId());
@@ -56,18 +63,25 @@ public class MessageService {
       return messageList.stream().map(m -> {
         Message message = new Message();
         message.setId(m.getId());
-        message.setFrom(SecurityContext.getLoginUserUid());
-        message.setTo(toUser.getUid());
+        if (m.getFromId().equals(toUser.getId())) {
+          message.setFrom(User.from(toUser));
+          message.setTo(SecurityContext.getLoginUser());
+        } else {
+          message.setTo(User.from(toUser));
+          message.setFrom(SecurityContext.getLoginUser());
+        }
         message.setContent(m.getContent());
         message.setTimestamp(m.getTimestamp());
         return message;
       }).collect(Collectors.toList());
-    }
+    } else if (request.getType() == UserType.GROUP) {
+      GroupParameter groupParameter = new GroupParameter();
+      groupParameter.setUid(request.getUid());
+      List<GroupModel> groupList = groupMapper.getGroupList(groupParameter);
+      if (groupList.size() == 0) {
+        return BizException.throwException("指定用户不存在:{}", request.getUid());
+      }
 
-    GroupParameter groupParameter = new GroupParameter();
-    groupParameter.setUid(request.getUid());
-    List<GroupModel> groupList = groupMapper.getGroupList(groupParameter);
-    if (groupList.size() != 0) {
       GroupModel group = groupList.get(0);
 
       MessageParameter parameter = new MessageParameter();
@@ -77,14 +91,38 @@ public class MessageService {
       return messageList.stream().map(m -> {
         Message message = new Message();
         message.setId(m.getId());
-        message.setFrom(SecurityContext.getLoginUserUid());
-        message.setTo(group.getUid());
+        message.setFrom(SecurityContext.getLoginUser());
+        message.setTo(User.from(group));
         message.setContent(m.getContent());
         message.setTimestamp(m.getTimestamp());
         return message;
       }).collect(Collectors.toList());
+    } else {
+      return BizException.throwException("指定类型不存在:{}", request.getType());
     }
+  }
 
-    return BizException.throwException("指定用户不存在:{}", request.getUid());
+  /**
+   * 保存消息
+   * 
+   * @param message
+   */
+  public void save(Message message) {
+    MessageModel m = new MessageModel()
+        .setFromId(message.getFrom().getId())
+        .setToId(message.getTo().getId())
+        .setContent(message.getContent())
+        .setTimestamp(LocalDateTime.now())
+        .setCreatedUserId(message.getFrom().getId())
+        .setUpdatedUserId(message.getFrom().getId());
+    if (message.getTo().getType() == UserType.USER) {
+      userMessageMapper.add(m);
+    } else if (message.getTo().getType() == UserType.GROUP) {
+      groupMessageMapper.add(m);
+    } else {
+      BizException.throwException("未知的用户类型:{}", message.getTo().getType());
+    }
+    // 更新消息ID
+    message.setId(m.getId());
   }
 }

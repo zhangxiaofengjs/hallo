@@ -1,4 +1,4 @@
-class ErrorService {
+class LogService {
   constructor(private debug: boolean = true) {}
 
   /**
@@ -17,10 +17,10 @@ class ErrorService {
    * 记录错误但不抛出异常
    * @param message 错误消息
    */
-  public error(err: any): void {
+  public error(err: any, ...args: any[]): void {
     if (this.debug) {
       const msg = err instanceof Error ? err.message : String(err)
-      console.error(`[错误] ${msg}`)
+      console.error(`[错误] ${msg}`, ...args)
     }
   }
 
@@ -28,9 +28,9 @@ class ErrorService {
    * 记录错误但不抛出异常
    * @param message 错误消息
    */
-  public info(message: string): void {
+  public info(message: string, ...args: any[]): void {
     if (this.debug) {
-      console.info(`[错误] ${message}`)
+      console.info(`[信息] ${message}`, ...args)
     }
   }
 
@@ -45,4 +45,4 @@ class ErrorService {
   }
 }
 
-export default new ErrorService()
+export default new LogService()

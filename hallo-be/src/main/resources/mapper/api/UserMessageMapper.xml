@@ -19,12 +19,28 @@
     FROM
     t_user_message
     <where>
-      <if test="from != null"> 
-        and c_from_id=#{from}
-      </if>
-      <if test="to != null">
-        and c_to_id=#{to}
-      </if>
+      and ((c_from_id=#{from} and c_to_id=#{to})
+      or (c_from_id=#{to} and c_to_id=#{from}))
     </where>
   </select>
+  <insert id="add" parameterType="com.hallo.api.mapper.model.MessageModel" useGeneratedKeys="true"
+    keyProperty="id">
+    INSERT INTO
+      t_user_message
+      (
+        c_from_id,
+        c_to_id,
+        c_content,
+        c_created_user_id,
+        c_updated_user_id
+      )
+    VALUES
+    (
+      #{fromId},
+      #{toId},
+      #{content},
+      #{createdUserId},
+      #{updatedUserId}
+    )
+  </insert>
 </mapper>

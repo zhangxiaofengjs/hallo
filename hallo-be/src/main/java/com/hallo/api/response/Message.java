@@ -2,6 +2,8 @@ package com.hallo.api.response;
 
 import java.time.LocalDateTime;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+
 import lombok.Data;
 
 /**
@@ -13,8 +15,14 @@ import lombok.Data;
 @Data
 public class Message {
   private Integer id;
-  private String from;
-  private String to;
+
+  // 客户端采集的临时ID
+  private String uid;
+
+  private User from;
+  private User to;
   private String content;
+
+  @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
   private LocalDateTime timestamp;
 }

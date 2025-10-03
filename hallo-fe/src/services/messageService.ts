@@ -1,5 +1,5 @@
 import type { Message, MessageResponse } from '@/types/message'
-import errorService from '@/utils/errorService'
+import errorService from '@/utils/logService'
 import httpService from '@/utils/httpService'
 
 class MessageService {
@@ -8,9 +8,10 @@ class MessageService {
    * @param contactId 获取联系人的消息
    * @returns
    */
-  getLoginUserMessages = async (uid: string): Promise<Message[]> => {
+  getLoginUserMessages = async (uid: string, type: string): Promise<Message[]> => {
     const response = await httpService.post<MessageResponse>(`/message/login-user-messages`, {
       uid,
+      type,
     })
     if (!response.success) {
       return errorService.throw('获取用户消息失败', response.message)

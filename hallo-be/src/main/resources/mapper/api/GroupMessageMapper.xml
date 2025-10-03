@@ -27,4 +27,24 @@
       </if>
     </where>
   </select>
+  <insert id="add" parameterType="com.hallo.api.mapper.model.MessageModel" useGeneratedKeys="true"
+    keyProperty="id">
+    INSERT INTO
+      t_group_message
+      (
+        c_from_id,
+        c_to_id,
+        c_content,
+        c_created_user_id,
+        c_updated_user_id,
+      )
+    VALUES
+    (
+      #{fromId},
+      #{toId},
+      #{content},
+      #{createdUserId},
+      #{updatedUserId}
+    )
+  </insert>
 </mapper>

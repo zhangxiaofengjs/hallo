@@ -20,7 +20,6 @@ import com.hallo.api.request.UserRequest;
 import com.hallo.api.response.User;
 import com.hallo.api.response.UserGroup;
 import com.hallo.api.response.UserGroupType;
-import com.hallo.api.response.UserStatus;
 import com.hallo.api.response.UserType;
 import com.hallo.fw.context.SecurityContext;
 import com.hallo.fw.exception.BizException;
@@ -54,7 +53,7 @@ public class UserService {
     // 取得收藏的联系人或者群组
     UserGroup favUserGroup = new UserGroup();
     favUserGroup.setType(UserGroupType.FAVORITE);
-    favUserGroup.setContacts(_List.create());
+    favUserGroup.setUsers(_List.create());
     result.add(favUserGroup);
     // TODO
 
@@ -65,10 +64,10 @@ public class UserService {
 
     UserGroup userGroup = new UserGroup();
     userGroup.setType(UserGroupType.GROUP);
-    userGroup.setContacts(_List.create());
+    userGroup.setUsers(_List.create());
     result.add(userGroup);
 
-    groups.stream().map(g -> convertGroup(g)).forEach(userGroup.getContacts()::add);
+    groups.stream().map(g -> User.from(g)).forEach(userGroup.getUsers()::add);
 
     // 取得联系人
     UserFriendParameter parameter = new UserFriendParameter();
@@ -77,23 +76,12 @@ public class UserService {
 
     UserGroup friendUserGroup = new UserGroup();
     friendUserGroup.setType(UserGroupType.FRIEND);
-    friendUserGroup.setContacts(_List.create());
+    friendUserGroup.setUsers(_List.create());
     result.add(friendUserGroup);
 
-    users.stream().map(c -> convertUser(c)).forEach(friendUserGroup.getContacts()::add);
+    users.stream().map(c -> User.from(c)).forEach(friendUserGroup.getUsers()::add);
 
     return result;
-  }
-
-  private User convertGroup(GroupModel g) {
-    return new User()//
-        .setUid(g.getUid())//
-        .setAccount(g.getUid())//
-        .setNickname(g.getName())//
-        .setAvatar(g.getAvatar())//
-        .setType(UserType.GROUP)
-        .setMail("")
-        .setStatus(UserStatus.ONLINE);
   }
 
   /**
@@ -112,7 +100,7 @@ public class UserService {
 
     UserModel user = userList.get(0);
 
-    return convertUser(user);
+    return User.from(user);
   }
 
   /**
@@ -123,34 +111,26 @@ public class UserService {
    * @return
    */
   public User getUser(UserRequest request) {
-    UserParameter parameter = new UserParameter();
-    parameter.setUid(request.getUid());
-    List<UserModel> userList = userMapper.getUserList(parameter);
-    if (userList.size() != 0) {
+    if (request.getType() == UserType.USER) {
+      UserParameter parameter = new UserParameter();
+      parameter.setUid(request.getUid());
+      List<UserModel> userList = userMapper.getUserList(parameter);
+      if (userList.size() == 0) {
+        BizException.throwException("指定用户不存在:{}", parameter.getId());
+      }
       UserModel user = userList.get(0);
 
-      return convertUser(user);
+      return User.from(user);
+    } else if (request.getType() == UserType.GROUP) {
+      GroupParameter groupParameter = new GroupParameter();
+      groupParameter.setUid(request.getUid());
+      List<GroupModel> groupList = groupMapper.getGroupList(groupParameter);
+      if (groupList.size() == 0) {
+        BizException.throwException("指定群组不存在:{}", request.getUid());
+      }
+      return User.from(groupList.get(0));
+    } else {
+      return BizException.throwException("指定类型不存在:{}", request.getType());
     }
-
-    GroupParameter groupParameter = new GroupParameter();
-    groupParameter.setUid(request.getUid());
-    List<GroupModel> groupList = groupMapper.getGroupList(groupParameter);
-    if (groupList.size() != 0) {
-      GroupModel group = groupList.get(0);
-      return convertGroup(group);
-    }
-
-    return BizException.throwException("指定用户不存在:{}", parameter.getId());
-  }
-
-  private User convertUser(UserModel user) {
-    return new User()
-        .setUid(user.getUid())
-        .setAccount(user.getAccount())
-        .setNickname(user.getNickname())
-        .setAvatar(user.getAvatar())
-        .setType(UserType.USER)
-        .setMail(user.getMail())
-        .setStatus(user.getStatus());
   }
 }

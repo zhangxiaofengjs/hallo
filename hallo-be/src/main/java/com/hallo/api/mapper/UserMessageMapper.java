@@ -16,4 +16,6 @@ import com.hallo.api.mapper.parameter.MessageParameter;
 @Mapper
 public interface UserMessageMapper {
   List<MessageModel> getMessageList(MessageParameter parameter);
+
+  void add(MessageModel m);
 }

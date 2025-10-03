@@ -1,71 +1,97 @@
 <template>
   <v-container fluid class="h-100 pa-0 d-flex flex-column">
     <!-- 聊天头部 -->
-    <v-card flat class="pa-2 d-flex align-center flex-grow-0 flex-shrink-0">
-      <v-avatar size="48" class="mr-3" color="grey-lighten-1">
-        <v-img :src="user?.avatar" :alt="user?.nickname" />
-      </v-avatar>
-      <div class="flex-grow-1">
-        <div class="text-h6 text-left text-truncate">{{ user?.nickname }}</div>
-        <div v-if="user?.status !== undefined" class="text-caption text-medium-emphasis text-left">
-          [{{ i8nService.text(user?.status) }}]
+    <v-card flat :loading="isLoadingMessage" class="d-flex flex-column h-100">
+      <v-card-title class="pa-2 d-flex align-center flex-grow-0 flex-shrink-0">
+        <v-avatar size="48" class="mr-3" color="grey-lighten-1">
+          <v-img :src="props.user?.avatar" :alt="props.user?.nickname" />
+        </v-avatar>
+        <div class="flex-grow-1">
+          <div class="text-h6 text-left text-truncate">{{ props.user?.nickname }}</div>
+          <div
+            v-if="props.user?.status !== undefined"
+            class="text-caption text-medium-emphasis text-left"
+          >
+            [{{ i8nService.text(props.user?.status) }}]
+          </div>
         </div>
-      </div>
-      <v-btn icon="mdi-web" variant="text" size="small" />
-    </v-card>
-    <v-divider></v-divider>
-    <v-card class="d-flex flex-column" height="100%" elevation="0">
+        <v-btn icon="mdi-web" variant="text" size="small" />
+      </v-card-title>
+      <v-divider></v-divider>
       <!-- 消息列表 -->
       <v-card-text
-        ref="messageList"
-        @scroll="saveScrollPosition"
-        class="flex-grow-1 pa-4 overflow-y-auto"
+        ref="messageListContainerRef"
+        class="pa-0 overflow-y-auto flex-1-1-0 h-scrollbar"
       >
-        <v-list v-for="message in messages" :key="message.id" class="message-item mb-3">
-          <v-list-item class="d-flex align-start">
-            <v-avatar size="32" :class="'ml-2'">
-              <v-img :src="message.from.avatar" :alt="message.from.nickname" />
-            </v-avatar>
-
-            <v-card :color="'primary'" elevation="1" rounded="lg" class="message-bubble">
-              <v-card-text class="pa-3">
-                <div class="text-body-2">{{ message.content }}</div>
-                <div class="text-caption mt-1" :class="'text-grey'" style="text-align: right">
-                  {{ message.timestamp }}
-                </div>
-              </v-card-text>
-            </v-card>
+        <v-list class="pa-0">
+          <v-list-item class="pl-2 pr-2 pt-1 pb-1" v-for="message in messages" :key="message.id">
+            <div class="d-flex flex-row">
+              <div class="pr-2">
+                <v-avatar
+                  :color="toolService.getAvatarColor(message.from.uid)"
+                  :text="message.from.nickname?.substring(0, 1) || ''"
+                  :image="message.from.avatar"
+                  class="text-h6"
+                ></v-avatar>
+              </div>
+              <v-card flat class="flex-grow-1">
+                <v-card-subtitle class="pl-2 pr-2">
+                  <span class="text-body-2 font-weight-bold">
+                    {{ message.from.nickname }}
+                  </span>
+                  <span class="text-caption ml-1 text-grey">{{ message.timestamp }}</span>
+                  <v-icon
+                    v-if="message.sendStatus !== undefined"
+                    :icon="
+                      message.sendStatus === SendStatus.SENDING
+                        ? 'mdi-sync'
+                        : message.sendStatus === SendStatus.SEND_SUCCESS
+                          ? 'mdi-check-circle'
+                          : 'mdi-close-circle'
+                    "
+                    :class="{ rotating: message.sendStatus === SendStatus.SENDING }"
+                    color="grey-lighten-1"
+                    size="small"
+                  />
+                </v-card-subtitle>
+                <v-card-text class="pt-1 pl-2 pr-2 pb-1">
+                  <div class="text-body-2">{{ message.content }}</div>
+                </v-card-text>
+                <v-card-actions class="message-action">
+                  <v-btn
+                    icon="mdi-reply"
+                    density="compact"
+                    size="small"
+                    variant="plain"
+                    color="grey-lighten-1"
+                  />
+                  <v-btn
+                    icon="mdi-emoticon-plus"
+                    density="compact"
+                    size="small"
+                    variant="plain"
+                    color="grey-lighten-1"
+                  />
+                </v-card-actions>
+              </v-card>
+            </div>
           </v-list-item>
         </v-list>
       </v-card-text>
-
+      <v-divider></v-divider>
       <!-- 消息输入区 -->
-      <v-card-actions class="message-input pa-4" style="border-top: 1px solid #e0e0e0">
+      <v-card-actions class="flex-grow-0 flex-shrink-0">
         <div class="d-flex align-center w-100">
-          <div class="d-flex mr-3">
-            <v-btn icon="mdi-file-document-outline" variant="text" size="small" class="mr-1" />
-            <v-btn icon="mdi-gift-outline" variant="text" size="small" class="mr-1" />
-            <v-btn icon="mdi-message-outline" variant="text" size="small" />
-          </div>
-
           <v-text-field
-            v-model="currentMessageInput"
+            v-model="messageInput"
             placeholder="输入消息..."
             variant="outlined"
             density="compact"
             hide-details
             class="flex-grow-1"
             @keyup.enter="sendMessage"
-            rounded
           />
-
-          <v-btn
-            icon="mdi-send"
-            color="primary"
-            class="ml-3"
-            @click="sendMessage"
-            :disabled="!currentMessageInput.trim()"
-          />
+          <v-btn :icon="'mdi-send'" color="primary" class="ml-0" @click="sendMessage" />
         </div>
       </v-card-actions>
     </v-card>
@@ -73,178 +99,173 @@
 </template>
 
 <script lang="ts" setup>
-  import { ref, watch, onMounted, computed, nextTick } from 'vue'
-  import type { User } from '@/types/user'
+  import { ref, watch, onMounted, onUnmounted, computed, nextTick } from 'vue'
+  import { type User } from '@/types/user'
   import i8nService from '@/utils/i8nService'
-  import userService from '@/services/userService'
-  import errorService from '@/utils/errorService'
+  import errorService from '@/utils/logService'
   import messageService from '@/services/messageService'
-  import type { Message } from '@/types/message'
+  import { SendStatus, type Message } from '@/types/message'
+  import toolService from '@/utils/toolService'
+  import { useLoginUserStore } from '@/stores/loginUser'
+  import { useWebSocketStore } from '@/stores/websocket'
+  import type { VCardText } from 'vuetify/components'
 
   const props = defineProps<{
-    uid: string
+    user: User | undefined
   }>()
 
-  // 当前交谈对象
-  const user = ref<User>()
+  const { user: loginUser } = useLoginUserStore()
+  const websocketStore = useWebSocketStore()
 
   // 当前的消息列表
   const messages = ref<Message[]>([])
 
-  // 为每个联系人维护独立的输入框状态
-  const messageInputs = ref<Record<string, string>>({})
+  // 取消订阅函数
+  let unsubscribeMessage: (() => void) | null = null
 
-  // 存储每个联系人的滚动位置
-  const contactScrollPositions = ref<Record<string, number>>({})
+  // 是否正在加载消息
+  const isLoadingMessage = ref<boolean>(false)
 
-  const emit = defineEmits<{
-    (e: 'send-message', content: string): void
-  }>()
-
-  const messageList = ref<HTMLDivElement | null>(null)
+  // 滚动区域
+  const messageListContainerRef = ref<VCardText>()
 
   // 获取当前联系人的输入框内容
-  const currentMessageInput = computed({
+  const messageInput = computed({
     get: () => {
-      return user.value?.uid ? messageInputs.value[user.value.uid] : ''
+      return props.user?.uid ? messageInputs.value[props.user?.uid] : ''
     },
     set: (value: string) => {
-      if (user.value?.uid) {
-        messageInputs.value[user.value.uid] = value
+      if (props.user?.uid) {
+        messageInputs.value[props.user?.uid] = value
       }
     },
   })
 
-  watch(
-    () => [props.uid],
-    () => {
-      // 取得用户信息
-      userService
-        .getUser(props.uid)
-        .then((res) => {
-          user.value = res
-        })
-        .catch((err) => {
-          errorService.error(err)
-        })
+  // 为每个联系人维护独立的输入框状态
+  const messageInputs = ref<Record<string, string>>({})
 
-      // 取得消息
-      messageService
-        .getLoginUserMessages(props.uid)
-        .then((res) => {
-          messages.value = res
-        })
-        .catch((err) => {
-          errorService.error(err)
-        })
+  // 发送消息
+  const sendMessage = async () => {
+    const content = messageInput.value.trim()
+    if (!content) {
+      return
+    }
+
+    const message: Message = {
+      id: 0,
+      uid: toolService.getUuid(),
+      from: loginUser!,
+      to: props.user!,
+      content: content,
+      timestamp: new Date().toISOString().slice(0, 19).replace('T', ' '),
+      sendStatus: SendStatus.SENDING,
+    }
+
+    try {
+      messages.value.push(message)
+
+      await websocketStore.sendMessage(message)
+
+      messageInput.value = ''
+      scrollToBottom()
+    } catch (error) {
+      // 发送失败，更新状态并显示错误
+      message.sendStatus = SendStatus.SEND_FAIL
+      errorService.error(error)
+    }
+  }
+
+  //监听当前交谈对象是否变化，重新初始化页面
+  watch(
+    () => [props.user],
+    () => {
+      if (props.user?.uid) {
+        isLoadingMessage.value = true
+        // 取得消息列表
+        messageService
+          .getLoginUserMessages(props.user?.uid, props.user?.type)
+          .then((res) => {
+            messages.value = res
+            isLoadingMessage.value = false
+
+            scrollToBottom()
+          })
+          .catch((err) => {
+            errorService.error(err)
+          })
+      }
+    },
+    {
+      immediate: true,
     }
   )
-  // 监听消息变化，自动滚动到底部
-  // watch(
-  //   () => props.messages.length,
-  //   () => {
-  //     // 使用nextTick确保DOM更新后再滚动到底部
-  //     nextTick(() => {
-  //       scrollToBottom()
-  //     })
-  //   }
-  // )
+  // 处理收到的 WebSocket 消息
+  const handleReceivedMessage = (message: Message) => {
+    // 只处理与当前聊天对象相关的消息
+    if (
+      (props.user && message.from.uid === props.user.uid && message.to.uid === loginUser?.uid) ||
+      (message.from.uid === loginUser?.uid && message.to.uid === props.user?.uid)
+    ) {
+      // 检查消息是否已存在（避免重复添加）
+      const existingMessage = messages.value.find((m) => m.uid === message.uid)
+      if (existingMessage) {
+        // 更新消息ID和时间戳
+        existingMessage.id = message.id
+        existingMessage.timestamp = message.timestamp
+        existingMessage.sendStatus = SendStatus.SEND_SUCCESS
+      } else {
+        messages.value.push(message)
 
-  // 组件挂载后恢复滚动位置或滚动到底部
+        // 自动滚动到底部
+        scrollToBottom()
+      }
+    }
+  }
+
+  // 组件挂载后恢复滚动位置或滚动到底部，并订阅消息
   onMounted(() => {
-    restoreScrollPosition()
+    // 订阅 WebSocket 消息
+    unsubscribeMessage = websocketStore.subscribeMessage(handleReceivedMessage)
   })
 
-  // 保存滚动位置
-  const saveScrollPosition = () => {
-    if (messageList.value) {
-      // contactScrollPositions.value[props.uid] = messageList.value.scrollTop
+  onUnmounted(() => {
+    // 组件卸载时取消订阅
+    if (unsubscribeMessage) {
+      unsubscribeMessage()
+      unsubscribeMessage = null
     }
-  }
-
-  // 恢复滚动位置
-  const restoreScrollPosition = () => {
-    if (messageList.value) {
-      // const savedPosition = contactScrollPositions.value[props.uid]
-      // if (savedPosition !== undefined) {
-      //   messageList.value.scrollTop = savedPosition
-      // } else {
-      //   // 使用nextTick确保DOM更新后再滚动到底部
-      //   nextTick(() => {
-      //     scrollToBottom()
-      //   })
-      // }
-    }
-  }
+  })
 
   // 滚动到底部
   const scrollToBottom = () => {
-    if (messageList.value) {
-      // 考虑padding的影响，确保完全滚动到底部
-      messageList.value.scrollTop = messageList.value.scrollHeight - messageList.value.clientHeight
-    }
-  }
-
-  // 监听联系人变化，保存当前滚动位置并恢复新联系人的滚动位置
-  // watch(
-  //   () => props.contact.uid,
-  //   (_, oldId) => {
-  //     if (messageList.value) {
-  //       // 保存旧联系人的滚动位置
-  //       if (oldId !== undefined) {
-  //         contactScrollPositions.value[oldId] = messageList.value.scrollTop
-  //       }
-  //       // 恢复新联系人的滚动位置
-  //       restoreScrollPosition()
-  //     }
-  //   }
-  // )
-
-  // 发送消息
-  const sendMessage = () => {
-    if (currentMessageInput.value.trim()) {
-      emit('send-message', currentMessageInput.value.trim())
-      currentMessageInput.value = ''
-      // 使用nextTick确保DOM更新后再滚动到底部
-      nextTick(() => {
-        scrollToBottom()
-      })
-    }
+    nextTick(() => {
+      if (messageListContainerRef.value) {
+        // 直接操作v-list元素，它的父容器v-card-text才是真正的滚动容器
+        const scrollContainer: HTMLDivElement = messageListContainerRef.value.$el
+        if (scrollContainer) {
+          scrollContainer.scrollTo({ top: scrollContainer.scrollHeight, behavior: 'smooth' })
+        }
+      }
+    })
   }
 </script>
 
 <style scoped>
-  .message-item {
-    display: flex;
-    width: 100%;
+  .message-action {
+    min-height: 12px;
+    max-height: 12px;
   }
 
-  .message-item.justify-end {
-    justify-content: flex-end;
+  .rotating {
+    animation: rotate 1.5s linear infinite;
   }
 
-  .message-bubble {
-    max-width: 100%;
-    word-break: break-word;
-  }
-
-  .message-list {
-    height: calc(100vh - 200px);
-  }
-
-  /* 消息动画效果 */
-  .message-item {
-    animation: fadeIn 0.3s ease;
-  }
-
-  @keyframes fadeIn {
+  @keyframes rotate {
     from {
-      opacity: 0;
-      transform: translateY(10px);
+      transform: rotate(0deg);
     }
     to {
-      opacity: 1;
-      transform: translateY(0);
+      transform: rotate(360deg);
     }
   }
 </style>

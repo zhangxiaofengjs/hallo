@@ -4,7 +4,7 @@ import axios, {
   type AxiosResponse,
   AxiosError,
 } from 'axios'
-import errorService from './errorService'
+import errorService from './logService'
 
 class HttpService {
   private instance: AxiosInstance

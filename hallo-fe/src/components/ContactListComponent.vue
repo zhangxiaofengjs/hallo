@@ -13,16 +13,20 @@
     single-line
   ></v-text-field>
   <v-divider></v-divider>
-  <v-list :lines="false" density="comfortable" class="text-left flex-grow-1 overflow-auto">
+  <v-list
+    :lines="false"
+    density="comfortable"
+    class="text-left flex-grow-1 overflow-auto h-scrollbar"
+  >
     <template v-for="userGroup in filteredUserGroups" :key="userGroup.type">
       <v-list-subheader>
         {{ i8nService.text(userGroup.type) }}
       </v-list-subheader>
       <v-list-item
-        v-for="contact in userGroup.contacts"
-        :key="contact.uid"
-        @click="handleContactClick(contact)"
-        :value="contact"
+        v-for="user in userGroup.users"
+        :key="user.uid"
+        @click="handleContactClick(user)"
+        :value="user"
         color="primary"
       >
         <template v-slot:prepend>
@@ -30,33 +34,33 @@
             <!-- 状态指示器 -->
             <v-badge
               dot
-              :color="getStatusColor(contact)"
+              :color="getStatusColor(user)"
               location="bottom right"
               offset-x="6"
               offset-y="0"
             >
               <v-avatar
-                color="grey-lighten-1"
-                :text="contact.nickname.substring(0, 1)"
-                :image="contact.avatar"
-                class="mr-2"
+                :color="colorService.getAvatarColor(user.uid)"
+                :text="user.nickname?.substring(0, 1)"
+                :image="user.avatar"
+                class="mr-2 text-h6"
               ></v-avatar>
             </v-badge>
           </div>
         </template>
-        <v-list-item-title v-text="contact.nickname" class="text-truncate"></v-list-item-title>
+        <v-list-item-title v-text="user.nickname" class="text-truncate"></v-list-item-title>
         <v-list-item-subtitle
-          v-text="contact.nickname + ' ' + contact.nickname"
+          v-text="user.nickname + ' ' + user.nickname"
           class="text-truncate d-block"
         ></v-list-item-subtitle>
         <template v-slot:append>
           <v-badge
-            v-if="contact.unread"
+            v-if="user.unread"
             bordered
             location="top right"
             color="error"
             class="mr-2"
-            :content="contact.unread"
+            :content="user.unread"
           ></v-badge>
         </template>
       </v-list-item>
@@ -68,7 +72,8 @@
   import userService from '@/services/userService'
   import type { User, UserGroup } from '@/types/user'
   import { UserStatus, UserType } from '@/types/user'
-  import errorService from '@/utils/errorService'
+  import colorService from '@/utils/toolService'
+  import errorService from '@/utils/logService'
   import i8nService from '@/utils/i8nService'
   import { computed, onMounted, ref } from 'vue'
   import { useRouter } from 'vue-router'
@@ -104,11 +109,11 @@
     const filter = searchKeyword.value.toLowerCase()
     return userGroups.value.map((group) => ({
       ...group,
-      contacts: group.contacts.filter(
-        (contact) =>
-          contact.nickname?.toLowerCase().includes(filter) ||
-          contact.account?.toLowerCase().includes(filter) ||
-          contact.mail?.toLowerCase().includes(filter)
+      contacts: group.users.filter(
+        (u) =>
+          u.nickname?.toLowerCase().includes(filter) ||
+          u.account?.toLowerCase().includes(filter) ||
+          u.mail?.toLowerCase().includes(filter)
       ),
     }))
   })
@@ -142,7 +147,7 @@
   const handleContactClick = (user: User) => {
     //跳转到聊天页面，通过state传递type参数
     router.push({
-      path: `/chat/${user.uid}`,
+      path: `/chat/${user.type}/${user.uid}`,
     })
   }
 </script>

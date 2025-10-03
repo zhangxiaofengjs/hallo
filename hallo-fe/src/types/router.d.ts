@@ -1,11 +1,13 @@
-import 'vue-router';
+import 'vue-router'
+import type { UserType } from './user'
 
 declare module 'vue-router' {
   interface RouteMeta {
     // 是可选的
   }
-  
+
   interface RouteParams {
-    contactId?: string;
+    type?: UserType
+    uid?: string
   }
 }

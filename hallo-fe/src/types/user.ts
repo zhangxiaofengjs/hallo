@@ -15,13 +15,13 @@ export enum UserStatus {
 // 用户类型
 export interface User {
   uid: string
-  account: string
-  nickname: string
-  mail: string
-  avatar: string
+  account?: string
+  nickname?: string
+  mail?: string
+  avatar?: string
   type: UserType
-  status: UserStatus
-  unread: number
+  status?: UserStatus
+  unread?: number
 }
 
 // 联系人列表组类型
@@ -33,11 +33,11 @@ export enum UserGroupType {
 
 export enum UserType {
   GROUP = 'group', // 分组
-  FRIEND = 'user', // 好友
+  USER = 'user', // 好友
 }
 
 // 联系人列表组
 export interface UserGroup {
   type: UserGroupType
-  contacts: User[]
+  users: User[]
 }
