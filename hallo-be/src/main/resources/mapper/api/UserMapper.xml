@@ -5,6 +5,7 @@
     <id column="c_id" property="id" />
     <result column="c_uid" property="uid" />
     <result column="c_account" property="account" />
+    <result column="c_password" property="password" />
     <result column="c_nickname" property="nickname" />
     <result column="c_avatar" property="avatar" />
     <result column="c_mail" property="mail" />
@@ -16,6 +17,7 @@
       c_id, 
       c_uid, 
       c_account,
+      c_password,
       c_nickname,
       c_avatar,
       c_mail,
@@ -25,6 +27,7 @@
     <where>
       <if test="id != null"> c_id = #{id} </if>
       <if test="uid != null"> c_uid = #{uid} </if>
+      <if test="account != null"> c_account = #{account} </if>
     </where>
   </select>
 </mapper>

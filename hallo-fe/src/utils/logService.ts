@@ -1,26 +1,23 @@
+import { globalErrorDialog } from '@/composables/useErrorDialog'
+
 class LogService {
   constructor(private debug: boolean = true) {}
 
   /**
-   * 抛出格式化的错误信息
-   * @param message 错误消息
-   * @param error 错误对象
+   * 记录错误但不抛出异常，同时显示错误对话框
+   * @param err 错误对象
+   * @param showDialog 是否显示对话框，默认为 true
+   * @param customMessage 自定义错误消息
    */
-  public throw(message: string, error: any): never {
-    const errorMessage = error instanceof Error ? error.message : String(error)
-    const msg = `[错误] ${message} ${errorMessage}`
-    console.error(msg)
-    throw new Error(msg)
-  }
-
-  /**
-   * 记录错误但不抛出异常
-   * @param message 错误消息
-   */
-  public error(err: any, ...args: any[]): void {
+  public error(err: any, showDialog: boolean = true, customMessage?: string): void {
     if (this.debug) {
       const msg = err instanceof Error ? err.message : String(err)
-      console.error(`[错误] ${msg}`, ...args)
+      console.error(`[错误] ${msg}`)
+    }
+
+    // 显示错误对话框
+    if (showDialog) {
+      globalErrorDialog.showErrorFromException(err, customMessage)
     }
   }
 
@@ -28,7 +25,7 @@ class LogService {
    * 记录错误但不抛出异常
    * @param message 错误消息
    */
-  public info(message: string, ...args: any[]): void {
+  public log(message: string, ...args: any[]): void {
     if (this.debug) {
       console.info(`[信息] ${message}`, ...args)
     }

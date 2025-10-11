@@ -5,6 +5,7 @@ import axios, {
   AxiosError,
 } from 'axios'
 import errorService from './logService'
+import { useLoginUserStore } from '@/stores/loginUserStore'
 
 class HttpService {
   private instance: AxiosInstance
@@ -26,11 +27,10 @@ class HttpService {
   private setupRequestInterceptor(): void {
     this.instance.interceptors.request.use(
       (config: InternalAxiosRequestConfig) => {
-        // 添加认证token
-        const token = localStorage.getItem('token')
-        if (token) {
+        const loginUserStore = useLoginUserStore()
+        if (loginUserStore.loginToken) {
           config.headers = config.headers || {}
-          config.headers.Authorization = `Bearer ${token}`
+          config.headers.Authorization = `Bearer ${loginUserStore.loginToken}`
         }
         return config
       },
@@ -87,13 +87,6 @@ class HttpService {
   public get<T = any>(url: string, config?: InternalAxiosRequestConfig): Promise<T> {
     try {
       // 默认加上当前用户
-      let userId = localStorage.getItem('userId')
-      userId = '1'
-      if (url.indexOf('?') === -1) {
-        url = `${url}?userId=${userId}`
-      } else {
-        url = `${url}&userId=${userId}`
-      }
       return this.instance
         .get<T>(url, config)
         .then((response) => response.data)

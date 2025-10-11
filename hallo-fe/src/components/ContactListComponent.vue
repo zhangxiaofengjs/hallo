@@ -66,6 +66,7 @@
       </v-list-item>
     </template>
   </v-list>
+  <h-msg-dialog ref="msgDlgRef"></h-msg-dialog>
 </template>
 
 <script lang="ts" setup>
@@ -73,27 +74,24 @@
   import type { User, UserGroup } from '@/types/user'
   import { UserStatus, UserType } from '@/types/user'
   import colorService from '@/utils/toolService'
-  import errorService from '@/utils/logService'
   import i8nService from '@/utils/i8nService'
   import { computed, onMounted, ref } from 'vue'
   import { useRouter } from 'vue-router'
+  import HMsgDialog from '@/components/MsgDialogComponent.vue'
 
   const router = useRouter()
-
   const searchKeyword = ref('')
 
   const userGroups = ref<UserGroup[]>([])
+  const msgDlgRef = ref<InstanceType<typeof HMsgDialog>>()
 
   onMounted(async () => {
-    // 查询当前用户信息
-    userService
-      .getLoginUserGroups()
-      .then((res) => {
-        userGroups.value = res
-      })
-      .catch((err) => {
-        errorService.error(err)
-      })
+    try {
+      // 查询当前用户信息
+      userGroups.value = await userService.getLoginUserGroups()
+    } catch (error: any) {
+      msgDlgRef.value?.showError(error)
+    }
   })
 
   /**
@@ -109,7 +107,7 @@
     const filter = searchKeyword.value.toLowerCase()
     return userGroups.value.map((group) => ({
       ...group,
-      contacts: group.users.filter(
+      users: group.users.filter(
         (u) =>
           u.nickname?.toLowerCase().includes(filter) ||
           u.account?.toLowerCase().includes(filter) ||

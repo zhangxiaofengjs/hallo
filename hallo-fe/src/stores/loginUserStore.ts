@@ -4,9 +4,17 @@ import type { User } from '@/types/user'
 
 export const useLoginUserStore = defineStore('login-user', () => {
   const KEY_LOGIN_USER = 'login-user'
+  const KEY_LOGIN_TOKEN = 'login-token'
 
   // 状态
   const user = ref<User>()
+  const loginToken = ref<string>()
+
+  const setLoginToken = (token: string) => {
+    loginToken.value = token
+    // 保存到本地存储
+    localStorage.setItem(KEY_LOGIN_TOKEN, token)
+  }
 
   // 操作方法
   const setUser = (u: User) => {
@@ -19,12 +27,12 @@ export const useLoginUserStore = defineStore('login-user', () => {
     if (user.value) {
       user.value = undefined
     }
-    // 清除本地存储
-    localStorage.removeItem(KEY_LOGIN_USER)
   }
 
   // 从本地存储恢复用户信息
   const restoreUser = () => {
+    loginToken.value = localStorage.getItem(KEY_LOGIN_TOKEN) || ''
+
     const savedUser = localStorage.getItem(KEY_LOGIN_USER)
     if (savedUser) {
       try {
@@ -42,8 +50,10 @@ export const useLoginUserStore = defineStore('login-user', () => {
   return {
     // 状态
     user,
+    loginToken,
     // 方法
     setUser,
+    setLoginToken,
     clearUser,
     restoreUser,
   }

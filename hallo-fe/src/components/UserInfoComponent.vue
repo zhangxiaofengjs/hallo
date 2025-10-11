@@ -14,7 +14,7 @@
 </template>
 
 <script lang="ts" name="UserInfoComponent" setup>
-  import { useLoginUserStore } from '@/stores/loginUser'
+  import { useLoginUserStore } from '@/stores/loginUserStore'
 
   // 用户
   const { user } = useLoginUserStore()

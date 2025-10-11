@@ -1,6 +1,6 @@
 import type { Message, MessageResponse } from '@/types/message'
-import errorService from '@/utils/logService'
 import httpService from '@/utils/httpService'
+import BizError from '@/types/error'
 
 class MessageService {
   /**
@@ -14,7 +14,7 @@ class MessageService {
       type,
     })
     if (!response.success) {
-      return errorService.throw('获取用户消息失败', response.message)
+      return BizError.error(response.message)
     }
 
     return response.data

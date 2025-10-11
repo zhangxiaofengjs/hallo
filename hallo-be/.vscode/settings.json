@@ -53,5 +53,6 @@
     "set"
   ],
   "xml.format.preserveEmptyContent": true,
-  "xml.format.joinContentLines": false
+  "xml.format.joinContentLines": false,
+  "java.debug.settings.onBuildFailureProceed": true
 }

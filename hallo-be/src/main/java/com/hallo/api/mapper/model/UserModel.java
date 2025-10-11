@@ -14,6 +14,7 @@ public class UserModel {
   private Integer id;
   private String uid;
   private String account;
+  private String password;
   private String nickname;
   private String avatar;
   private String mail;

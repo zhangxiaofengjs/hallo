@@ -15,6 +15,7 @@ export enum UserStatus {
 // 用户类型
 export interface User {
   uid: string
+  token: string
   account?: string
   nickname?: string
   mail?: string

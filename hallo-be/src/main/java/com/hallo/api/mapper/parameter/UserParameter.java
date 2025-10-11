@@ -11,4 +11,5 @@ import lombok.Data;
 public class UserParameter {
   private Integer id;
   private String uid;
+  private String account;
 }

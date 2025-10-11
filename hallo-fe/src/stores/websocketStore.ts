@@ -16,19 +16,19 @@ export const useWebSocketStore = defineStore('websocket', () => {
   const user = ref<User | null>(null)
   // 连接错误信息
   const connectionError = ref<string | null>(null)
-  
+
   // 消息订阅者列表
   const messageSubscribers = ref<Set<MessageSubscriber>>(new Set())
 
   // 消息分发函数
   const distributeMessage = (message: Message) => {
-    logService.info('收到 WebSocket 消息:', message)
-    
+    logService.log('收到 WebSocket 消息:', message)
+
     // 通知所有订阅者
-    messageSubscribers.value.forEach(subscriber => {
+    messageSubscribers.value.forEach((subscriber) => {
       try {
         subscriber(message)
-      } catch (error) {
+      } catch (error: any) {
         logService.error('消息订阅者处理失败:', error)
       }
     })
@@ -37,19 +37,19 @@ export const useWebSocketStore = defineStore('websocket', () => {
   // 订阅消息
   const subscribeMessage = (callback: MessageSubscriber) => {
     messageSubscribers.value.add(callback)
-    logService.info('添加消息订阅者，当前订阅者数量:', messageSubscribers.value.size)
-    
+    logService.log('添加消息订阅者，当前订阅者数量:', messageSubscribers.value.size)
+
     // 返回取消订阅函数
     return () => {
       messageSubscribers.value.delete(callback)
-      logService.info('移除消息订阅者，当前订阅者数量:', messageSubscribers.value.size)
+      logService.log('移除消息订阅者，当前订阅者数量:', messageSubscribers.value.size)
     }
   }
 
   // 初始化 WebSocket 连接
   const initConnection = async (u: User) => {
     if (connectionStatus.value === ConnectionStatus.CONNECTED && user.value?.uid === u.uid) {
-      logService.info('WebSocket 已连接，跳过重复初始化')
+      logService.log('WebSocket 已连接，跳过重复初始化')
       return
     }
 
@@ -58,32 +58,32 @@ export const useWebSocketStore = defineStore('websocket', () => {
       connectionError.value = null
       user.value = u
 
-      logService.info('初始化 WebSocket 连接:' + u.uid)
+      logService.log('初始化 WebSocket 连接:' + u.uid)
 
       await websocketService.init(u.uid, distributeMessage)
 
       connectionStatus.value = ConnectionStatus.CONNECTED
-      logService.info('WebSocket 连接成功')
-    } catch (error) {
+      logService.log('WebSocket 连接成功')
+    } catch (error: any) {
       logService.error('WebSocket 连接失败:', error)
       connectionError.value = error instanceof Error ? error.message : '连接失败'
       connectionStatus.value = ConnectionStatus.DISCONNECTED
     } finally {
-      logService.info('WebSocket 连接状态:', connectionStatus.value)
+      logService.log('WebSocket 连接状态:', connectionStatus.value)
     }
   }
 
   // 断开连接
   const disconnect = () => {
     try {
-      logService.info('断开 WebSocket 连接')
+      logService.log('断开 WebSocket 连接')
       websocketService.disconnect()
       connectionStatus.value = ConnectionStatus.DISCONNECTED
       user.value = null
       connectionError.value = null
       // 清空所有订阅者
       messageSubscribers.value.clear()
-    } catch (error) {
+    } catch (error: any) {
       logService.error('断开 WebSocket 连接失败:', error)
     }
   }
@@ -98,7 +98,7 @@ export const useWebSocketStore = defineStore('websocket', () => {
 
   // 重连
   const reconnect = () => {
-    logService.info('1s后 重连 WebSocket 连接')
+    logService.log('1s后 重连 WebSocket 连接')
     if (user.value) {
       const currentUser = user.value
       disconnect()
@@ -111,7 +111,7 @@ export const useWebSocketStore = defineStore('websocket', () => {
 
   // 清理连接状态
   const cleanup = () => {
-    logService.info('清理 WebSocket 连接状态')
+    logService.log('清理 WebSocket 连接状态')
 
     disconnect()
     connectionStatus.value = ConnectionStatus.DISCONNECTED

@@ -1,33 +1,36 @@
 package com.hallo.fw.context;
 
+import org.springframework.stereotype.Component;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
+
 import com.hallo.api.response.User;
-import com.hallo.api.response.UserStatus;
-import com.hallo.api.response.UserType;
+
+import jakarta.servlet.http.HttpServletRequest;
 
 /**
  * 
  * @author zhangxiaofeng
  * @create 2025年9月28日 18:57:59
  */
+@Component
 public class SecurityContext {
+  public static final String REQUEST_KEY_LOGIN_USER = "__HALLO_REQUEST_KEY_LOGIN_USER__";
 
   public static Integer getLoginUserId() {
-    return 1;// TODO
+    return getLoginUser().getId();
   }
 
   public static String getLoginUserUid() {
-    return "11111111";// TODO
+    return getLoginUser().getUid();
   }
 
   public static User getLoginUser() {
-    return new User()
-        .setUid("11111111")
-        .setAccount("11111111")
-        .setNickname("zhangxiaofeng")
-        .setAvatar("/icons/1.png")
-        .setType(UserType.USER)
-        .setMail("11111111")
-        .setStatus(UserStatus.ONLINE);
-    // TODO Auto-generated method stub
+    ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
+    if (attributes != null) {
+      HttpServletRequest request = attributes.getRequest();
+      return (User) request.getAttribute(SecurityContext.REQUEST_KEY_LOGIN_USER);
+    }
+    return null;
   }
 }

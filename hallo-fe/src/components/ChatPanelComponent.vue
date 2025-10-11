@@ -96,6 +96,7 @@
       </v-card-actions>
     </v-card>
   </v-container>
+  <h-msg-dialog ref="msgDlgRef"></h-msg-dialog>
 </template>
 
 <script lang="ts" setup>
@@ -106,9 +107,10 @@
   import messageService from '@/services/messageService'
   import { SendStatus, type Message } from '@/types/message'
   import toolService from '@/utils/toolService'
-  import { useLoginUserStore } from '@/stores/loginUser'
-  import { useWebSocketStore } from '@/stores/websocket'
+  import { useLoginUserStore } from '@/stores/loginUserStore'
+  import { useWebSocketStore } from '@/stores/websocketStore'
   import type { VCardText } from 'vuetify/components'
+  import HMsgDialog from '@/components/MsgDialogComponent.vue'
 
   const props = defineProps<{
     user: User | undefined
@@ -116,6 +118,7 @@
 
   const { user: loginUser } = useLoginUserStore()
   const websocketStore = useWebSocketStore()
+  const msgDlgRef = ref<InstanceType<typeof HMsgDialog>>()
 
   // 当前的消息列表
   const messages = ref<Message[]>([])
@@ -178,21 +181,24 @@
   //监听当前交谈对象是否变化，重新初始化页面
   watch(
     () => [props.user],
-    () => {
+    async () => {
       if (props.user?.uid) {
         isLoadingMessage.value = true
-        // 取得消息列表
-        messageService
-          .getLoginUserMessages(props.user?.uid, props.user?.type)
-          .then((res) => {
-            messages.value = res
-            isLoadingMessage.value = false
 
-            scrollToBottom()
-          })
-          .catch((err) => {
-            errorService.error(err)
-          })
+        // 取得消息列表
+        try {
+          messages.value = await messageService.getLoginUserMessages(
+            props.user?.uid,
+            props.user?.type
+          )
+
+          isLoadingMessage.value = false
+
+          scrollToBottom()
+        } catch (error: any) {
+          msgDlgRef.value?.showError(error)
+          isLoadingMessage.value = false
+        }
       }
     },
     {

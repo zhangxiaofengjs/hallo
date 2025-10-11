@@ -7,7 +7,7 @@ declare module 'vue-router' {
   }
 
   interface RouteParams {
-    type?: UserType
-    uid?: string
+    type: UserType
+    uid: string
   }
 }
