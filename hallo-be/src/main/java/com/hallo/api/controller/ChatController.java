@@ -58,7 +58,7 @@ public class ChatController {
    * 
    * @param chatMessage
    */
-  @MessageMapping("/online")
+  @MessageMapping("/status")
   public void online(@Payload ChatMessage chatMessage) {
 
   }

@@ -143,7 +143,7 @@
    * @param user
    */
   const handleContactClick = (user: User) => {
-    //跳转到聊天页面，通过state传递type参数
+    //跳转到聊天页面
     router.push({
       path: `/chat/${user.type}/${user.uid}`,
     })

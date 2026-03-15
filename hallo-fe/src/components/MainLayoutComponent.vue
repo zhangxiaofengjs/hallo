@@ -11,16 +11,12 @@
 
     <v-main>
       <router-view name="chat" />
-      <v-container v-if="!$route.params.uid" class="empty">
-        <h-home-page />
-      </v-container>
     </v-main>
   </v-app>
 </template>
 
 <script lang="ts" setup>
   import HUserInfo from './UserInfoComponent.vue'
-  import HHomePage from './HomePageComponent.vue'
   import HUserStatus from './UserStatusComponent.vue'
 </script>
 

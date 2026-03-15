@@ -19,7 +19,7 @@ const routes = [
         name: 'hp',
         components: {
           contactList: () => import('@/views/ContactListView.vue'),
-          chat: () => import('@/views/ChatView.vue'),
+          chat: () => import('@/views/HomepageView.vue'),
         },
       },
       {

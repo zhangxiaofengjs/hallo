@@ -194,7 +194,7 @@
 
           isLoadingMessage.value = false
 
-          scrollToBottom()
+          scrollToBottom(false)
         } catch (error: any) {
           msgDlgRef.value?.showError(error)
           isLoadingMessage.value = false
@@ -243,13 +243,16 @@
   })
 
   // 滚动到底部
-  const scrollToBottom = () => {
+  const scrollToBottom = (animate: boolean = true) => {
     nextTick(() => {
       if (messageListContainerRef.value) {
         // 直接操作v-list元素，它的父容器v-card-text才是真正的滚动容器
         const scrollContainer: HTMLDivElement = messageListContainerRef.value.$el
         if (scrollContainer) {
-          scrollContainer.scrollTo({ top: scrollContainer.scrollHeight, behavior: 'smooth' })
+          scrollContainer.scrollTo({
+            top: scrollContainer.scrollHeight,
+            behavior: animate ? 'smooth' : 'auto',
+          })
         }
       }
     })

@@ -14,7 +14,7 @@ class I8nService {
     [UserStatus.BUSY]: '忙碌',
     [UserGroupType.FAVORITE]: '收藏',
     [UserGroupType.GROUP]: '分组',
-    [UserGroupType.FRIEND]: '好友',
+    [UserGroupType.FRIEND]: '联系人',
   } as const
 
   /**
